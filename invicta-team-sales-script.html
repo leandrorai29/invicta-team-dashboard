@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Script Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080d14;--surface:#0d1520;--surface2:#111d2c;--surface3:#162032;
+  --border:#1e2d3d;--border2:#243444;
+  --gold:#3b82f6;--gold2:rgba(59,130,246,0.15);--gold3:rgba(59,130,246,0.08);
+  --accent:#3b82f6;--accent2:#60a5fa;
+  --text:#e2eaf4;--text2:#6b8094;--text3:#3a4a5a;
+  --green:#10b981;--red:#f43f5e;--orange:#fb923c;
+  --radius:14px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+.nav-bar{background:rgba(6,10,16,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:200;height:44px;}
+.nav-link{padding:0 18px;height:44px;display:flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-decoration:none;}
+.nav-link:hover{color:var(--text);}
+.nav-link.active{color:var(--accent2);border-bottom-color:var(--accent);}
+
+/* TOPBAR */
+.topbar{background:linear-gradient(180deg,var(--surface) 0%,rgba(13,21,32,.95) 100%);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:44px;z-index:100;backdrop-filter:blur(12px);}
+.topbar-left{position:relative;}
+.ql-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:7px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;letter-spacing:.3px;}
+.ql-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.ql-dropdown{position:absolute;top:calc(100% + 8px);left:0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:8px;min-width:280px;display:none;z-index:300;box-shadow:0 12px 40px rgba(0,0,0,.7);}
+.ql-dropdown.open{display:block;}
+.ql-item{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:6px;transition:background .15s;}
+.ql-item:hover{background:var(--surface3);}
+.ql-item-link{font-size:12px;color:var(--text);text-decoration:none;flex:1;}
+.ql-item-link.unset{color:var(--text3);font-style:italic;}
+.ql-item-link.unset:hover{color:var(--text3);cursor:default;}
+.ql-item-link:not(.unset):hover{color:var(--accent2);}
+.ql-edit-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:2px 6px;font-size:13px;border-radius:4px;transition:color .15s;}
+.ql-edit-btn:hover{color:var(--accent2);}
+.ql-edit-input{font-size:12px;background:var(--surface3);border:1px solid var(--accent);border-radius:4px;padding:4px 8px;color:var(--text);font-family:'Inter',sans-serif;outline:none;width:200px;}
+.topbar-title{font-size:13px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,var(--accent2),var(--cyan,#06b6d4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;position:absolute;left:50%;transform:translateX(-50%);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.timer-display{font-size:15px;font-weight:700;font-family:'DM Mono',monospace,sans-serif;color:var(--text);min-width:52px;text-align:center;}
+.tb-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;letter-spacing:.3px;}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.tb-btn.running{border-color:var(--green);color:var(--green);}
+
+/* MAIN */
+.main{max-width:820px;margin:0 auto;padding:28px 24px 80px;}
+
+/* BADGE */
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border:1px solid rgba(59,130,246,.4);color:var(--accent2);border-radius:4px;margin-bottom:10px;background:rgba(59,130,246,.06);}
+
+/* SECTION */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;transition:border-color .2s;}
+.section:hover{border-color:var(--border2);}
+.section-title{font-size:15px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px;}
+.section-desc{font-size:13px;color:var(--text2);font-style:italic;margin-bottom:18px;line-height:1.6;}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+
+/* SELECTOR BUTTONS */
+.selector-group{display:grid;gap:10px;}
+.selector-group.cols2{grid-template-columns:1fr 1fr;}
+.selector-group.cols2x2{grid-template-columns:1fr 1fr;gap:10px;}
+.sel-btn{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:16px 18px;cursor:pointer;transition:all .2s;text-align:left;}
+.sel-btn:hover{border-color:var(--text3);background:var(--surface3);}
+.sel-btn.active{border-color:var(--accent2);background:var(--surface3);box-shadow:0 0 0 1px rgba(59,130,246,.2),var(--glow-blue,0 0 16px rgba(59,130,246,.15));}
+.sel-btn.multi.active{border-color:var(--red);background:rgba(244,63,94,.08);box-shadow:0 0 0 1px rgba(244,63,94,.2);}
+.sel-btn.multi.active .sel-btn-title{color:var(--red);}
+.filter-btn.active-combo{background:rgba(244,63,94,.15);border-color:var(--red);color:var(--red);}
+.sel-btn-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.3px;}
+.sel-btn-sub{font-size:11px;color:var(--text2);margin-top:3px;}
+.sel-btn-emoji{font-size:18px;margin-bottom:6px;display:block;}
+
+/* PROSPECT */
+.prospect-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.field-group{display:flex;flex-direction:column;gap:6px;}
+.field-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);}
+.field-input{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:all .2s;width:100%;}
+.field-input:focus{border-color:var(--accent);background:var(--surface3);}
+.field-input::placeholder{color:var(--text3);}
+.copy-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;width:100%;}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.copy-btn.copied{border-color:var(--green);color:var(--green);}
+
+/* CONTEXT */
+.context-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field-prefix-wrap{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;overflow:hidden;transition:border-color .2s;}
+.field-prefix-wrap:focus-within{border-color:var(--accent);}
+.field-prefix{padding:10px 10px 10px 12px;font-size:13px;color:var(--text2);font-weight:600;white-space:nowrap;}
+.field-prefix-input{background:transparent;border:none;padding:10px 0;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;flex:1;}
+.field-suffix{padding:10px 12px 10px 0;font-size:13px;color:var(--text2);font-weight:600;white-space:nowrap;}
+
+/* SAVE BLOCK */
+.save-btn{padding:12px 28px;border-radius:var(--radius-sm);border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;letter-spacing:.3px;cursor:pointer;transition:all .2s;}
+.save-btn.disabled{background:var(--surface3);color:var(--text3);cursor:not-allowed;}
+.save-btn.enabled{background:linear-gradient(135deg,var(--accent),#1d4ed8);color:#fff;box-shadow:0 2px 12px rgba(59,130,246,.3);}
+.save-btn.enabled:hover{box-shadow:0 4px 20px rgba(59,130,246,.45);transform:translateY(-1px);}
+.save-status{display:flex;align-items:center;justify-content:space-between;margin-top:14px;}
+.save-badge{font-size:11px;font-weight:600;}
+.save-badge.unsaved{color:var(--accent2);}
+.save-badge.saved{color:var(--green);}
+.save-warning{font-size:12px;color:var(--orange);margin-top:10px;}
+
+/* NOTES PANEL */
+.notes-overlay{position:fixed;inset:0;background:rgba(0,0,6,.7);backdrop-filter:blur(4px);z-index:400;display:none;opacity:0;transition:opacity .2s;}
+.notes-overlay.open{display:block;opacity:1;}
+.notes-panel{position:fixed;top:0;right:0;width:380px;height:100vh;background:var(--surface);border-left:1px solid var(--border2);z-index:401;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+.notes-panel.open{transform:translateX(0);}
+.notes-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.notes-title{font-size:14px;font-weight:700;}
+.notes-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px;border-radius:4px;transition:color .15s;}
+.notes-close:hover{color:var(--text);}
+.notes-textarea{flex:1;background:transparent;border:none;padding:20px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;}
+.notes-textarea::placeholder{color:var(--text3);}
+
+/* SEARCH BTN */
+.search-btn{background:var(--gold2);border:1px solid rgba(59,130,246,.3);color:var(--accent2);padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .2s;}
+.search-btn:hover{background:rgba(59,130,246,.2);}
+
+/* HIDDEN */
+.hidden{display:none!important;}
+
+/* DIVIDER */
+.section-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+/* OPTIONAL LABEL */
+.optional{font-size:11px;color:var(--text3);font-weight:400;margin-left:6px;}
+
+/* TEXTAREA */
+.field-textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:all .2s;width:100%;resize:vertical;line-height:1.6;}
+.field-textarea:focus{border-color:var(--accent);background:var(--surface3);}
+.field-textarea::placeholder{color:var(--text3);}
+
+/* FIELD NOTE */
+.field-note{font-size:11px;color:var(--text3);margin-top:4px;}
+
+@media(max-width:640px){
+  .prospect-row{grid-template-columns:1fr;}
+  .context-row{grid-template-columns:1fr;}
+  .selector-group.cols2{grid-template-columns:1fr;}
+  .selector-group.cols2x2{grid-template-columns:1fr 1fr;}
+  .topbar-title{font-size:12px;letter-spacing:2px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav-bar">
+  <a class="nav-link active" href="/sales-script" id="nav-script">📋 Sales Script</a>
+  <a class="nav-link" href="/dashboard" id="nav-dashboard">📊 Dashboard</a>
+</nav>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div style="width:120px;"></div>
+  <div class="topbar-title">SALES SCRIPT</div>
+  <div class="topbar-right">
+    <span class="timer-display" id="timer">00:00</span>
+    <button class="tb-btn" id="timer-start-btn" onclick="toggleTimer()">START</button>
+    <button class="tb-btn" onclick="resetTimer()">RESET</button>
+    <button class="tb-btn" onclick="openNotes()">📝 NOTES</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SECCIÓN -1 — CLOSER -->
+  <div class="section">
+    <span class="badge">Empezá acá</span>
+    <div class="section-title">¿Quién toma la llamada?</div>
+    <div class="section-desc">Elegí tu nombre antes de arrancar — así el Dashboard puede filtrar por closer.</div>
+    <div class="selector-group" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="sel-btn" id="btn-closer-manuela" onclick="select('closer','manuela',this)">
+        <div class="sel-btn-title">MANUELA</div>
+      </div>
+      <div class="sel-btn" id="btn-closer-leandro" onclick="select('closer','leandro',this)">
+        <div class="sel-btn-title">LEANDRO</div>
+      </div>
+      <div class="sel-btn" id="btn-closer-ariel" onclick="select('closer','ariel',this)">
+        <div class="sel-btn-title">ARIEL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FECHA DE LA LLAMADA -->
+  <div class="section" style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:13px;font-weight:600;color:var(--text2);">📅 Fecha de la llamada</span>
+      <input type="date" id="call-date-input" class="field-input" style="width:auto;padding:7px 12px;font-size:13px;" oninput="updateForm('callDate',this.value)">
+    </div>
+    <div style="font-size:11px;color:var(--text3);">Podés cargar llamadas de días anteriores</div>
+  </div>
+
+
+  <!-- SECCIÓN 1 — TIPO DE LLAMADA -->
+  <div class="section">
+    <span class="badge">Tipo de llamada</span>
+    <div class="section-title">Tipo de llamada</div>
+    <div class="section-desc">Initial Call para primeras conversaciones. Follow-Up / Decisión cuando ya vieron el plan y esta llamada es para decidir Sí / No.</div>
+    <div class="selector-group cols2">
+      <div class="sel-btn" id="btn-initial" onclick="select('callType','initial',this)">
+        <div class="sel-btn-title">INITIAL CALL</div>
+        <div class="sel-btn-sub">Primera conversación con el prospecto</div>
+      </div>
+      <div class="sel-btn" id="btn-followup" onclick="select('callType','followup',this)">
+        <div class="sel-btn-title">FOLLOW-UP / DECISIÓN</div>
+        <div class="sel-btn-sub">Ya vieron el plan — deciden Sí / No</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2 — INFO DEL PROSPECTO -->
+  <div class="section">
+    <span class="badge">Completar</span>
+    <div class="section-header">
+      <div>
+        <div class="section-title">Info del Prospecto</div>
+        <div class="section-desc">Buscá el lead con la 🔍 o cargalo manual antes de arrancar la llamada.</div>
+      </div>
+      <button class="search-btn">🔍 BUSCAR LEAD</button>
+    </div>
+    <div class="prospect-row">
+      <div class="field-group">
+        <div class="field-label">Nombre</div>
+        <input class="field-input" id="prospect-name" type="text" placeholder="Nombre completo" oninput="updateForm('prospectName',this.value)">
+        <button class="copy-btn" onclick="copyField('prospect-name',this)">COPIAR</button>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Email</div>
+        <input class="field-input" id="prospect-email" type="email" placeholder="email@ejemplo.com" oninput="updateForm('prospectEmail',this.value)">
+        <button class="copy-btn" onclick="copyField('prospect-email',this)">COPIAR</button>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Teléfono</div>
+        <input class="field-input" id="prospect-phone" type="tel" placeholder="+54 9 11..." oninput="updateForm('prospectPhone',this.value)">
+        <button class="copy-btn" onclick="copyField('prospect-phone',this)">COPIAR</button>
+      </div>
+    </div>
+
+    <!-- Puntuación del lead -->
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:4px;">Calidad del Lead — Puntuá 1 a 10</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-style:italic;">Tu lectura del lead — intent, fit con el ICP, capacidad de pago. 7+ cuenta como lead calificado.</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" id="punt-buttons-container"></div>
+      <span id="punt-label" style="font-size:12px;color:var(--text3);margin-top:8px;display:block;">Sin puntuar todavía</span>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 3 — DECISOR -->
+  <div class="section">
+    <span class="badge">Preguntá ahora</span>
+    <div class="section-title">¿Deciden ellos o hay otros?</div>
+    <div class="section-desc">"Aparte de vos, ¿quién más necesita estar cómodo con esto si decidimos que es el camino correcto?"</div>
+    <div class="selector-group cols2">
+      <div class="sel-btn" onclick="select('decisionMaker','solo',this)">
+        <div class="sel-btn-title">DECIDEN ELLOS</div>
+        <div class="sel-btn-sub">DECISOR PRINCIPAL</div>
+      </div>
+      <div class="sel-btn" onclick="select('decisionMaker','champion',this)">
+        <div class="sel-btn-title">HAY OTROS</div>
+        <div class="sel-btn-sub">CHAMPION — falta otro decisor</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 5 — POST-LLAMADA -->
+  <div class="section">
+    <span class="badge">Post-llamada</span>
+    <div class="section-title">¿Qué pasó con la llamada?</div>
+
+    <!-- 1. ¿Qué pasó con la cita? -->
+    <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">1. ¿Qué pasó con la cita?</div>
+    <div class="selector-group cols2x2">
+      <div class="sel-btn" onclick="select('callResult','attended',this)"><span class="sel-btn-emoji">✅</span><div class="sel-btn-title">Asistió</div><div class="sel-btn-sub">El lead se conectó/llegó a la demo</div></div>
+      <div class="sel-btn" onclick="select('callResult','noshow',this)"><span class="sel-btn-emoji">👎</span><div class="sel-btn-title">No asistió</div><div class="sel-btn-sub">No-show — no se conectó</div></div>
+      <div class="sel-btn" onclick="select('callResult','rescheduled',this)"><span class="sel-btn-emoji">📞</span><div class="sel-btn-title">Reagendada</div><div class="sel-btn-sub">Movió la fecha — nueva cita pactada</div></div>
+      <div class="sel-btn" onclick="select('callResult','cancelled',this)"><span class="sel-btn-emoji">❌</span><div class="sel-btn-title">Cancelada</div><div class="sel-btn-sub">Canceló la cita sin reagendar</div></div>
+    </div>
+
+    <!-- 1b — NO ASISTIÓ -->
+    <div id="noshow-type-section" class="hidden" style="margin-top:20px;">
+      <hr class="section-divider">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">1b. ¿Qué tipo de no-show?</div>
+      <div class="selector-group cols2">
+        <div class="sel-btn" onclick="select('noshowType','nunca',this)"><span class="sel-btn-emoji">🚫</span><div class="sel-btn-title">Nunca respondió</div><div class="sel-btn-sub">Nunca contestó a ningún mensaje</div></div>
+        <div class="sel-btn" onclick="select('noshowType','conversacion',this)"><span class="sel-btn-emoji">💬</span><div class="sel-btn-title">Tuvo conversación previa</div><div class="sel-btn-sub">Hablamos antes pero no apareció</div></div>
+      </div>
+    </div>
+
+    <!-- 2 — ASISTIÓ -->
+    <div id="attended-section" class="hidden" style="margin-top:20px;">
+      <hr class="section-divider">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">2. ¿Le pitcheaste el programa?</div>
+      <div class="selector-group cols2">
+        <div class="sel-btn" onclick="select('pitched','si',this)"><span class="sel-btn-emoji">🎯</span><div class="sel-btn-title">Sí, se le pitcheó</div><div class="sel-btn-sub">Le mostraste el programa y la oferta</div></div>
+        <div class="sel-btn" onclick="select('pitched','no',this)"><span class="sel-btn-emoji">🔴</span><div class="sel-btn-title">No se le pitcheó</div><div class="sel-btn-sub">La llamada terminó sin presentar la oferta</div></div>
+      </div>
+
+      <!-- 2b — por qué no se pitcheó -->
+      <div id="no-pitched-section" class="hidden" style="margin-top:20px;">
+        <hr class="section-divider">
+        <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">2b. ¿Por qué no se le pitcheó?</div>
+        <div class="selector-group" style="grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="sel-btn" onclick="select('noPitchReason','descalificado',this)"><span class="sel-btn-emoji">🚫</span><div class="sel-btn-title">Descalificado</div><div class="sel-btn-sub">No es ICP / no podemos ayudarlo</div></div>
+          <div class="sel-btn" onclick="select('noPitchReason','decisores',this)"><span class="sel-btn-emoji">👥</span><div class="sel-btn-title">Faltaban decisores</div><div class="sel-btn-sub">No estaban los tomadores de decisión</div></div>
+          <div class="sel-btn" onclick="select('noPitchReason','lugar',this)"><span class="sel-btn-emoji">🚗</span><div class="sel-btn-title">Lugar inadecuado</div><div class="sel-btn-sub">Estaba en un contexto que no daba para pitchear</div></div>
+          <div class="sel-btn" onclick="select('noPitchReason','tarde',this)"><span class="sel-btn-emoji">⏰</span><div class="sel-btn-title">Llegó tarde</div><div class="sel-btn-sub">Asistió tarde, no alcanzó el tiempo</div></div>
+        </div>
+      </div>
+
+      <!-- 3 — SE PITCHEÓ -->
+      <div id="pitched-section" class="hidden" style="margin-top:20px;">
+        <hr class="section-divider">
+        <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">3. ¿Cerró?</div>
+        <div class="selector-group cols2">
+          <div class="sel-btn" onclick="select('closed','si',this)"><span class="sel-btn-emoji">🎉</span><div class="sel-btn-title">Cerró</div><div class="sel-btn-sub">Aceptó la oferta — cobrar y onboardear</div></div>
+          <div class="sel-btn" onclick="select('closed','no',this)"><span class="sel-btn-emoji">😓</span><div class="sel-btn-title">No cerró</div><div class="sel-btn-sub">Asistió y se le pitcheó, pero no firmó</div></div>
+        </div>
+
+        <!-- 4 — CERRÓ → PROGRAMAS -->
+        <div id="closed-si-section" class="hidden" style="margin-top:20px;">
+          <hr class="section-divider">
+          <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">4. ¿Qué programa tiene más chance de avanzar (o avanzó)?</div>
+
+          <!-- Programas Invicta -->
+          <div id="programas-dental">
+            <div class="selector-group cols2">
+              <div class="sel-btn" onclick="select('programa','fee-cuotas',this)"><span class="sel-btn-emoji">💼</span><div class="sel-btn-title">Fee + Cuotas</div><div class="sel-btn-sub">Pago inicial + cuotas mensuales</div></div>
+              <div class="sel-btn" onclick="select('programa','pif',this)"><span class="sel-btn-emoji">💼</span><div class="sel-btn-title">PIF</div><div class="sel-btn-sub">Pago único completo</div></div>
+            </div>
+          </div>
+
+          <!-- Montos del cierre -->
+          <div style="margin-top:20px;background:var(--surface2);border:1px solid rgba(16,185,129,.2);border-radius:var(--radius);padding:20px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--green);margin-bottom:6px;">💰 Montos del cierre — se graban en el dashboard</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.5;"><strong>Cash collected</strong> = USD cobrados HOY (upfront, depósito). <strong>Contracted revenue</strong> = total firmado (incluye payment plan futuro). Se autocompleta del programa pero se puede editar.</div>
+            <div class="form-row">
+              <div class="field-group">
+                <div class="field-label">Cash Collected (USD)</div>
+                <div class="field-prefix-wrap"><span class="field-prefix">$</span><input class="field-prefix-input" id="cash-collected" type="number" placeholder="0" oninput="updateForm('cashCollected',this.value)"></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Contracted Revenue (USD)</div>
+                <div class="field-prefix-wrap"><span class="field-prefix">$</span><input class="field-prefix-input" id="contracted-revenue" type="number" placeholder="0" oninput="updateForm('contractedRevenue',this.value)"></div>
+              </div>
+            </div>
+
+            <!-- Comisión por agencia (se comparte con el Dashboard) -->
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(16,185,129,.15);display:flex;gap:12px;">
+              <div class="field-group" id="comision-invicta-group" style="flex:1;">
+                <div class="field-label">Comisión (%)</div>
+                <select class="field-input" id="comision-invicta-pct-ss" onchange="saveComisionConfigSS()">
+                  <option value="10">10%</option>
+                  <option value="15">15%</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Plan de cuotas -->
+            <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(16,185,129,.15);">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px;">
+                <input type="checkbox" id="usa-cuotas" onchange="toggleCuotas(this.checked)" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;">
+                <span style="font-size:12px;font-weight:600;color:var(--text);">¿Este cliente paga en cuotas?</span>
+              </label>
+              <div id="cuotas-config" class="hidden" style="display:flex;gap:12px;align-items:flex-end;">
+                <div class="field-group" style="flex:1;">
+                  <div class="field-label">Cantidad de cuotas</div>
+                  <input class="field-input" id="cant-cuotas" type="number" min="2" max="24" placeholder="Ej: 4" oninput="updateForm('cantCuotas',this.value)">
+                </div>
+                <div class="field-group" style="flex:1;">
+                  <div class="field-label">Monto por cuota (USD)</div>
+                  <div class="field-prefix-wrap"><span class="field-prefix">$</span><input class="field-prefix-input" id="monto-cuota" type="number" placeholder="0" oninput="updateForm('montoCuota',this.value)"></div>
+                </div>
+                <div class="field-group" style="flex:1;">
+                  <div class="field-label">Fecha 1ra cuota</div>
+                  <input class="field-input" id="fecha-primera-cuota" type="date" oninput="updateForm('fechaPrimeraCuota',this.value)">
+                </div>
+              </div>
+              <div id="cuotas-preview" style="font-size:11px;color:var(--text3);margin-top:8px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 — NO CERRÓ → OBJECIÓN -->
+        <div id="closed-no-section" class="hidden" style="margin-top:20px;">
+          <hr class="section-divider">
+          <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">4. ¿Cuál fue la objeción principal?</div>
+          <div style="margin-bottom:14px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px;">Categoría de objeción</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="objecion-buttons">
+              <div class="sel-btn" onclick="selectObjCategoria('bomba',this)"><div class="sel-btn-title">🌫️ Bomba de Humo</div><div class="sel-btn-sub">Tengo que pensarlo / Pareja-Socio</div></div>
+              <div class="sel-btn" onclick="selectObjCategoria('dinero',this)"><div class="sel-btn-title">💰 Dinero</div></div>
+              <div class="sel-btn" onclick="selectObjCategoria('logistica',this)"><div class="sel-btn-title">🚚 Logística</div></div>
+              <div class="sel-btn" onclick="selectObjCategoria('miedo',this)"><div class="sel-btn-title">😰 Miedo</div></div>
+            </div>
+          </div>
+
+          <!-- Sub-opciones BOMBA DE HUMO -->
+          <div id="obj-sub-bomba" class="hidden" style="margin-bottom:14px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px;">¿Qué tipo de bomba de humo?</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="sel-btn" onclick="selectObjSub('bomba','pensarlo',this)"><div class="sel-btn-title">🤔 Tengo que pensarlo</div></div>
+              <div class="sel-btn" onclick="selectObjSub('bomba','socio-pareja',this)"><div class="sel-btn-title">🤝 Pareja / Socio</div></div>
+              <div class="sel-btn" onclick="selectObjSub('bomba','dias',this)"><div class="sel-btn-title">📅 Lo pienso en unos días</div></div>
+              <div class="sel-btn" onclick="selectObjSub('bomba','mail',this)"><div class="sel-btn-title">📧 Mandámelo por mail</div></div>
+              <div class="sel-btn" onclick="selectObjSub('bomba','numeros',this)"><div class="sel-btn-title">📊 Tengo que revisar mis números</div></div>
+              <div class="sel-btn" onclick="selectObjSub('bomba','tarjeta',this)"><div class="sel-btn-title">💳 Se llevó la tarjeta</div></div>
+              <div class="sel-btn" onclick="selectObjSub('bomba','otra',this)"><div class="sel-btn-title">📝 Otra bomba de humo</div></div>
+            </div>
+          </div>
+
+          <!-- Sub-opciones MIEDO (multi-select) -->
+          <div id="obj-sub-miedo" class="hidden" style="margin-bottom:14px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:6px;">¿A qué le tiene miedo? <span style="font-weight:400;color:var(--text3);">(podés marcar varios)</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="sel-btn multi" onclick="toggleObjMiedo('yo',this)"><div class="sel-btn-title">🙋 Yo</div><div class="sel-btn-sub">No me siento capaz / no sé si me va a funcionar</div></div>
+              <div class="sel-btn multi" onclick="toggleObjMiedo('tu',this)"><div class="sel-btn-title">🤝 Tú</div><div class="sel-btn-sub">No sé si son la opción correcta / no lo veo claro</div></div>
+              <div class="sel-btn multi" onclick="toggleObjMiedo('mañana',this)"><div class="sel-btn-title">🔮 Mañana</div><div class="sel-btn-sub">Incertidumbre / miedo a fallar sin experiencia previa</div></div>
+              <div class="sel-btn multi" onclick="toggleObjMiedo('ayer',this)"><div class="sel-btn-title">📉 Ayer</div><div class="sel-btn-sub">Ya le pasó antes — mala experiencia respaldada por hechos</div></div>
+            </div>
+            <div style="margin-top:10px;">
+              <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">¿Se combina con otra categoría?</div>
+              <div style="display:flex;gap:8px;">
+                <button class="filter-btn" id="miedo-combo-dinero" onclick="toggleMiedoCombo('dinero',this)" style="padding:6px 14px;">+ Dinero</button>
+                <button class="filter-btn" id="miedo-combo-logistica" onclick="toggleMiedoCombo('logistica',this)" style="padding:6px 14px;">+ Logística</button>
+              </div>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Objeción en sus palabras</div>
+            <input class="field-input" id="objecion-detalle" type="text" placeholder="Escribí exactamente lo que dijo..." oninput="updateForm('objecionDetalle',this.value)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1b — CANCELADA -->
+    <div id="who-cancel-section" class="hidden" style="margin-top:20px;">
+      <hr class="section-divider">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">1b. ¿Quién canceló la demo?</div>
+      <div class="selector-group cols2">
+        <div class="sel-btn" onclick="select('whoCancel','team',this)"><span class="sel-btn-emoji">🏢</span><div class="sel-btn-title">Por el equipo</div><div class="sel-btn-sub">Nuestro lado tuvo que cancelar</div></div>
+        <div class="sel-btn" onclick="select('whoCancel','lead',this)"><span class="sel-btn-emoji">🙅</span><div class="sel-btn-title">Por el lead</div><div class="sel-btn-sub">El lead avisó y canceló</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 6 — RESUMEN AL EQUIPO -->
+  <div class="section">
+    <span class="badge">Resumen</span>
+    <div class="section-title">Resumen al equipo</div>
+    <div class="section-desc">Sube como nota en GHL — para que el equipo de delivery / cobranza tenga contexto completo.</div>
+
+    <div class="field-group" style="margin-bottom:16px;">
+      <div class="field-label">Objeción principal <span class="optional">si no cerró</span></div>
+      <input class="field-input" id="objecion-resumen" type="text" placeholder="¿Qué frenó al lead?" oninput="updateForm('objecionResumen',this.value)">
+    </div>
+
+    <div class="field-group" style="margin-bottom:16px;">
+      <div class="field-label">Call Recording (Fathom Link) <span class="optional">opcional</span></div>
+      <input class="field-input" id="fathom-link" type="text" placeholder="https://fathom.video/share/…" oninput="updateForm('fathomLink',this.value)">
+      <div class="field-note">Se guarda como Call Recording (llamada inicial) en bookings.</div>
+    </div>
+
+    <div class="field-group" style="margin-bottom:16px;">
+      <div class="field-label">Transcripción de Fathom <span class="optional">opcional</span></div>
+      <textarea class="field-textarea" id="fathom-transcript" rows="5" placeholder="Pegá la transcripción de Fathom acá si la tenés a mano…" oninput="updateForm('fathomTranscript',this.value)"></textarea>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Notas manuales para el equipo <span class="optional">opcional</span></div>
+      <textarea class="field-textarea" id="manual-notes" rows="3" placeholder="Cualquier contexto adicional para el equipo…" oninput="updateForm('manualNotes',this.value)"></textarea>
+    </div>
+  </div>
+
+  <!-- GUARDAR -->
+  <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center;padding:8px 0 40px;">
+    <span id="save-warning" style="font-size:12px;color:#fb923c;">⚠ Completá el wizard antes de guardar.</span>
+    <button class="save-btn disabled" id="save-btn" onclick="saveCall()" style="width:auto;padding:12px 28px;">💾 Guardar llamada en Dashboard</button>
+    <span id="save-badge" class="save-badge unsaved" style="display:none;">✓ Guardado en Dashboard</span>
+  </div>
+
+</div>
+
+<!-- NOTES PANEL -->
+<div class="notes-overlay" id="notes-overlay" onclick="closeNotes()"></div>
+<div class="notes-panel" id="notes-panel">
+  <div class="notes-header">
+    <div class="notes-title">📝 NOTAS DE LA LLAMADA</div>
+    <button class="notes-close" onclick="closeNotes()">✕</button>
+  </div>
+  <textarea class="notes-textarea" id="notes-textarea" placeholder="Anotá lo que necesitás..."></textarea>
+</div>
+
+<script>
+// ===== STATE =====
+// ===== SUPABASE =====
+const SUPABASE_URL = 'PEGAR_TU_SUPABASE_URL_ACA';
+const SUPABASE_KEY = 'PEGAR_TU_SUPABASE_ANON_KEY_ACA';
+async function sbSaveCall(call){
+  try{await fetch(`${SUPABASE_URL}/rest/v1/calls?on_conflict=id`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:call.id,closer:call.closer||'',nombre:call.nombre,empresa:call.empresa||'',estado:call.estado,fecha:call.fecha,objecion:call.objecion||'',programa:call.programa||'',cash_collected:call.cashCollected||0,contracted_revenue:call.contractedRevenue||0,notas:call.notas||''})});}catch(e){console.error('SB call error:',e);}
+}
+async function sbSaveHotLead(lead){
+  try{await fetch(`${SUPABASE_URL}/rest/v1/hot_leads?on_conflict=id`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:lead.id,closer:lead.closer||'',nombre:lead.nombre,empresa:lead.empresa||'',estado:lead.estado,ultimo_contacto:lead.ultimoContacto||'',proximo_followup:lead.proximoFollowup||'',transcript:lead.transcript||'',notas:lead.notas||'',objecion:lead.objecion||'',analisis_call:lead.analisisCall||'',puntuacion:lead.puntuacion||null,mensajes:lead.mensajes||[]})});}catch(e){console.error('SB HL error:',e);}
+}
+async function sbSaveCuota(cuota){
+  try{await fetch(`${SUPABASE_URL}/rest/v1/cuotas?on_conflict=id`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:cuota.id,closer:cuota.closer||'',call_id:cuota.call_id,nombre_cliente:cuota.nombre_cliente,empresa:cuota.empresa||'',numero_cuota:cuota.numero_cuota,total_cuotas:cuota.total_cuotas,monto:cuota.monto||0,fecha_estimada:cuota.fecha_estimada,pagada:cuota.pagada||false,fecha_pagada:cuota.fecha_pagada||null})});}catch(e){console.error('SB cuota error:',e);}
+}
+
+const FORM_KEY = 'sales-script-form';
+const NOTES_KEY = 'sales-script-notes';
+const LINKS_KEY = 'sales-script-links';
+
+const defaultLinks = [
+  { label: 'Links de pago', url: '' },
+  { label: 'Presentación Miro', url: '' },
+  { label: 'Presentación de precios', url: '' },
+  { label: 'Proyecciones y Costo de Inacción', url: '' },
+  { label: 'Guion de ventas', url: '' },
+  { label: 'Activos de venta', url: '' },
+  { label: 'Formulario para crear contratos en tiempo real', url: '' },
+  { label: 'Formulario de nuevo cliente', url: '' }
+];
+
+let form = {
+  closer: null,
+  empresa: 'sa-dental', // Invicta es la única empresa en este proyecto
+  callType: null,
+  callDate: '',
+  prospectName: '', prospectEmail: '', prospectPhone: '',
+  puntuacionLead: null,
+  decisionMaker: null,
+  callResult: null, whoCancel: null,
+  noshowType: null, pitched: null, closed: null, noPitchReason: null,
+  programa: null, cashCollected: '', contractedRevenue: '',
+  usaCuotas: false, cantCuotas: '', montoCuota: '', fechaPrimeraCuota: '',
+  objecionCategoria: null, objecionSub: null, objecionMiedoTags: [], objecionMiedoCombo: [], objecionDetalle: '', objecionResumen: '',
+  fathomLink: '', fathomTranscript: '', manualNotes: ''
+};
+
+let links = [];
+let timerSeconds = 0;
+let timerRunning = false;
+let timerInterval = null;
+let saved = false;
+
+function initPuntButtons() {
+  const container = document.getElementById('punt-buttons-container');
+  if(!container) return;
+  container.innerHTML = '';
+  for(let n=1; n<=10; n++) {
+    const btn = document.createElement('button');
+    btn.id = `punt-btn-${n}`;
+    btn.textContent = n;
+    btn.style.cssText = 'width:36px;height:36px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;font-family:DM Mono,monospace;transition:all .2s;';
+    btn.onclick = () => setPuntLead(n);
+    container.appendChild(btn);
+  }
+}
+
+// ===== INIT =====
+function init() {
+  // Load form
+  try { const s = localStorage.getItem(FORM_KEY); if(s) form = {...form, ...JSON.parse(s)}; } catch(e){}
+  // Load notes
+  const notes = localStorage.getItem(NOTES_KEY) || '';
+  document.getElementById('notes-textarea').value = notes;
+  // Restore form UI
+  restoreFormUI();
+  updateWizard();
+  initPuntButtons();
+  loadComisionConfigSS();
+  // Fecha de hoy por defecto
+  const dateInput = document.getElementById('call-date-input');
+  if(dateInput) dateInput.value = form.callDate || new Date().toISOString().slice(0,10);
+}
+
+// Comisión por agencia — comparte la misma config (localStorage 'calc_config') que el Dashboard
+function loadComisionConfigSS(){
+  try{
+    const c=localStorage.getItem('calc_config');
+    const d=c?JSON.parse(c):{};
+    const elInv=document.getElementById('comision-invicta-pct-ss');if(elInv)elInv.value=d.comisionInvicta||10;
+    const elSca=document.getElementById('comision-scaling-pct-ss');if(elSca)elSca.value=d.comisionScaling||10;
+  }catch(e){}
+  updateComisionVisibility();
+}
+function updateComisionVisibility(){
+  // Invicta es la única empresa en este proyecto — la comisión siempre está visible
+}
+function saveComisionConfigSS(){
+  try{
+    const c=localStorage.getItem('calc_config');
+    const config=c?JSON.parse(c):{};
+    config.comisionInvicta=parseFloat(document.getElementById('comision-invicta-pct-ss').value)||10;
+    config.comisionScaling=parseFloat(document.getElementById('comision-scaling-pct-ss').value)||10;
+    localStorage.setItem('calc_config',JSON.stringify(config));
+  }catch(e){}
+}
+
+function restoreFormUI() {
+  if(form.closer) activateBtn('closer', form.closer);
+  if(form.empresa) activateBtn('empresa', form.empresa);
+  if(form.callType) activateBtn('callType', form.callType);
+  if(form.decisionMaker) activateBtn('decisionMaker', form.decisionMaker);
+  if(form.callResult) {
+    activateBtn('callResult', form.callResult);
+    if(form.callResult === 'cancelled') document.getElementById('who-cancel-section').classList.remove('hidden');
+    if(form.callResult === 'noshow') document.getElementById('noshow-type-section').classList.remove('hidden');
+    if(form.callResult === 'attended') document.getElementById('attended-section').classList.remove('hidden');
+  }
+  if(form.whoCancel) activateBtn('whoCancel', form.whoCancel);
+  if(form.noshowType) activateBtn('noshowType', form.noshowType);
+  if(form.pitched) {
+    activateBtn('pitched', form.pitched);
+    if(form.pitched === 'si') document.getElementById('pitched-section').classList.remove('hidden');
+  }
+  if(form.closed) activateBtn('closed', form.closed);
+  document.getElementById('prospect-name').value = form.prospectName;
+  document.getElementById('prospect-email').value = form.prospectEmail;
+  document.getElementById('prospect-phone').value = form.prospectPhone;
+  document.getElementById('fathom-link').value = form.fathomLink;
+  document.getElementById('fathom-transcript').value = form.fathomTranscript;
+  document.getElementById('manual-notes').value = form.manualNotes;
+}
+
+function activateBtn(field, value) {
+  const map = { initial:'btn-initial', followup:'btn-followup', 'sa-dental':'btn-sa-dental', scaling:'btn-scaling', manuela:'btn-closer-manuela', leandro:'btn-closer-leandro', ariel:'btn-closer-ariel' };
+  if(map[value]) { document.getElementById(map[value])?.classList.add('active'); }
+}
+
+// ===== SELECTOR =====
+const selectorGroups = {
+  callType: ['btn-initial','btn-followup'],
+  decisionMaker: null,
+  callResult: null,
+  whoCancel: null
+};
+
+function select(field, value, el) {
+  form[field] = value;
+  const parent = el.parentElement;
+  parent.querySelectorAll('.sel-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+
+  if(field === 'empresa') {
+    updateComisionVisibility();
+  }
+
+  if(field === 'callResult') {
+    form.whoCancel = null; form.noshowType = null; form.pitched = null; form.closed = null;
+    form.programa = null; form.objecionTipo = null;
+    document.querySelectorAll('#who-cancel-section,#noshow-type-section,#attended-section,#pitched-section,#closed-si-section,#closed-no-section')
+      .forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('#who-cancel-section .sel-btn,#noshow-type-section .sel-btn,#attended-section .sel-btn,#pitched-section .sel-btn,#closed-si-section .sel-btn,#closed-no-section .sel-btn')
+      .forEach(b => b.classList.remove('active'));
+    if(value === 'cancelled') document.getElementById('who-cancel-section').classList.remove('hidden');
+    if(value === 'noshow') document.getElementById('noshow-type-section').classList.remove('hidden');
+    if(value === 'attended') document.getElementById('attended-section').classList.remove('hidden');
+  }
+
+  if(field === 'pitched') {
+    document.getElementById('pitched-section').classList.toggle('hidden', value !== 'si');
+    document.getElementById('no-pitched-section').classList.toggle('hidden', value !== 'no');
+    if(value !== 'si') { form.closed = null; form.programa = null; }
+    if(value !== 'no') { form.noPitchReason = null; }
+  }
+
+  if(field === 'closed') {
+    document.getElementById('closed-si-section').classList.toggle('hidden', value !== 'si');
+    document.getElementById('closed-no-section').classList.toggle('hidden', value !== 'no');
+    // Programas: en este proyecto siempre son los de Invicta, no hace falta togglear por empresa
+  }
+
+  saveFormToStorage();
+  updateWizard();
+}
+
+function selectObjCategoria(cat, el) {
+  form.objecionCategoria = cat;
+  form.objecionSub = null;
+  form.objecionMiedoTags = [];
+  form.objecionMiedoCombo = [];
+  document.querySelectorAll('#objecion-buttons .sel-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('obj-sub-bomba').classList.toggle('hidden', cat !== 'bomba');
+  document.getElementById('obj-sub-miedo').classList.toggle('hidden', cat !== 'miedo');
+  if(cat !== 'bomba') document.querySelectorAll('#obj-sub-bomba .sel-btn').forEach(b=>b.classList.remove('active'));
+  if(cat !== 'miedo') {
+    document.querySelectorAll('#obj-sub-miedo .sel-btn.multi').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#miedo-combo-dinero,#miedo-combo-logistica').forEach(b=>b.classList.remove('active-combo'));
+  }
+  saveFormToStorage();
+  updateWizard();
+}
+
+function selectObjSub(cat, sub, el) {
+  form.objecionSub = sub;
+  document.querySelectorAll('#obj-sub-bomba .sel-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  saveFormToStorage();
+  updateWizard();
+}
+
+function toggleObjMiedo(tag, el) {
+  const idx = form.objecionMiedoTags.indexOf(tag);
+  if(idx > -1) { form.objecionMiedoTags.splice(idx,1); el.classList.remove('active'); }
+  else { form.objecionMiedoTags.push(tag); el.classList.add('active'); }
+  saveFormToStorage();
+  updateWizard();
+}
+
+function toggleMiedoCombo(combo, el) {
+  const idx = form.objecionMiedoCombo.indexOf(combo);
+  if(idx > -1) { form.objecionMiedoCombo.splice(idx,1); el.classList.remove('active-combo'); }
+  else { form.objecionMiedoCombo.push(combo); el.classList.add('active-combo'); }
+  saveFormToStorage();
+}
+
+// ===== FORM UPDATE =====
+function updateForm(field, value) {
+  form[field] = value;
+  saved = false;
+  saveFormToStorage();
+  updateWizard();
+  if(field === 'cantCuotas' || field === 'montoCuota' || field === 'fechaPrimeraCuota') {
+    updateCuotasPreview();
+  }
+}
+
+function saveFormToStorage() {
+  try { localStorage.setItem(FORM_KEY, JSON.stringify(form)); } catch(e){}
+}
+
+// ===== WIZARD =====
+function isWizardComplete() {
+  if(!form.closer) return false;
+  if(!form.callType) return false;
+  if(!form.prospectName.trim()) return false;
+  if(!form.decisionMaker) return false;
+  if(!form.callResult) return false;
+  if(form.callResult === 'cancelled' && !form.whoCancel) return false;
+  if(form.callResult === 'noshow' && !form.noshowType) return false;
+  if(form.callResult === 'attended' && !form.pitched) return false;
+  if(form.callResult === 'attended' && form.pitched === 'si' && !form.closed) return false;
+  if(form.callResult === 'attended' && form.pitched === 'si' && form.closed === 'si' && !form.programa) return false;
+  return true;
+}
+
+function getStage() {
+  if(!form.callResult) return null;
+  const stages = {
+    attended: 'Demo Realizada',
+    noshow: 'No-Show',
+    rescheduled: 'Reagendada',
+    cancelled: form.whoCancel === 'lead' ? 'Cancelada por Lead' : form.whoCancel === 'team' ? 'Cancelada por Equipo' : null
+  };
+  return stages[form.callResult] || null;
+}
+
+function updateWizard() {
+  const complete = isWizardComplete();
+  const saveBtn = document.getElementById('save-btn');
+  const warning = document.getElementById('save-warning');
+  if(complete) {
+    saveBtn.classList.remove('disabled');
+    saveBtn.classList.add('enabled');
+    warning.style.display = 'none';
+  } else {
+    saveBtn.classList.add('disabled');
+    saveBtn.classList.remove('enabled');
+    warning.style.display = 'inline';
+  }
+}
+
+// ===== SAVE =====
+function saveCall() {
+  if(!isWizardComplete()) return;
+
+  let estado = 'seguimiento';
+  if(form.callResult === 'attended') {
+    if(form.pitched === 'si' && form.closed === 'si') estado = 'cerrada';
+    else if(form.pitched === 'si' && form.closed === 'no') estado = 'seguimiento';
+    else if(form.pitched === 'no' && form.noPitchReason === 'descalificado') estado = 'no-califica';
+    else if(form.pitched === 'no') estado = 'no-pitcheo';
+    else estado = 'no-cerrada';
+  } else if(form.callResult === 'noshow') estado = 'no-cerrada';
+  else if(form.callResult === 'rescheduled') estado = 'agendada';
+  else if(form.callResult === 'cancelled') estado = 'no-cerrada';
+
+  const empresaLabel = { 'sa-dental':'Invicta', 'scaling':'Scaling In Blue' }[form.empresa] || '';
+  // La objeción solo viene del campo de objeción real, nunca del cuello de botella
+  const bombaLabels = {'pensarlo':'Tengo que pensarlo','socio-pareja':'Pareja / Socio','dias':'Lo pienso en unos días','mail':'Mandámelo por mail','numeros':'Revisar números','tarjeta':'Se llevó la tarjeta','otra':'Otra bomba de humo'};
+  const miedoLabels = {'yo':'Yo','tu':'Tú','mañana':'Mañana','ayer':'Ayer'};
+  let objecion = '';
+  if(estado !== 'no-califica') {
+    if(form.objecionCategoria === 'bomba') {
+      objecion = '🌫️ Bomba de Humo: ' + (bombaLabels[form.objecionSub] || form.objecionSub || '');
+    } else if(form.objecionCategoria === 'miedo') {
+      const tags = form.objecionMiedoTags.map(t => miedoLabels[t]).join(', ');
+      const combos = form.objecionMiedoCombo.length ? ' + ' + form.objecionMiedoCombo.map(c=>c==='dinero'?'Dinero':'Logística').join(' + ') : '';
+      objecion = '😰 Miedo (' + tags + ')' + combos;
+    } else if(form.objecionCategoria === 'dinero') {
+      objecion = '💰 Dinero';
+    } else if(form.objecionCategoria === 'logistica') {
+      objecion = '🚚 Logística';
+    } else {
+      objecion = form.objecionResumen || form.objecionDetalle || '';
+    }
+  }
+
+  let dashState = { calls:[], leads:[], filter:'dia' };
+  try { const s = localStorage.getItem('scd_v2'); if(s) dashState = JSON.parse(s); } catch(e){}
+
+  const notas = [
+    empresaLabel ? `Empresa: ${empresaLabel}` : '',
+    form.programa ? `Programa: ${form.programa}` : '',
+    form.cashCollected ? `Cash: $${form.cashCollected}` : '',
+    form.contractedRevenue ? `Contracted: $${form.contractedRevenue}` : '',
+    form.callResult === 'attended' && form.pitched === 'no' ? `No pitcheó: ${{'descalificado':'Descalificado','decisores':'Faltaban decisores','lugar':'Lugar inadecuado','tarde':'Llegó tarde'}[form.noPitchReason]||''}` : '',
+    form.callResult === 'noshow' ? `No-show: ${form.noshowType === 'nunca' ? 'Nunca respondió' : 'Tuvo conversación previa'}` : '',
+    form.decisionMaker === 'champion' ? 'Champion — falta otro decisor' : '',
+    form.manualNotes || '',
+    form.fathomLink ? `Fathom: ${form.fathomLink}` : ''
+  ].filter(Boolean).join(' | ');
+
+  const fechaCall = form.callDate || new Date().toISOString().slice(0,10);
+
+  const newCall = {
+    id: Date.now(),
+    closer: form.closer || '',
+    nombre: form.prospectName,
+    empresa: empresaLabel,
+    estado,
+    fecha: fechaCall,
+    objecion,
+    cashCollected: form.cashCollected ? parseFloat(form.cashCollected) : 0,
+    contractedRevenue: form.contractedRevenue ? parseFloat(form.contractedRevenue) : 0,
+    programa: form.programa || '',
+    notas
+  };
+  dashState.calls.push(newCall);
+  try { localStorage.setItem('scd_v2', JSON.stringify(dashState)); } catch(e){}
+  // Sincronizar con Supabase
+  sbSaveCall(newCall);
+
+  // Generar cuotas si aplica
+  if(form.usaCuotas && form.cantCuotas && form.montoCuota && form.fechaPrimeraCuota) {
+    const cant = parseInt(form.cantCuotas);
+    const monto = parseFloat(form.montoCuota);
+    const base = new Date(form.fechaPrimeraCuota + 'T00:00:00');
+    for(let i=0; i<cant; i++) {
+      const f = new Date(base);
+      f.setDate(f.getDate() + (i*30));
+      const cuota = {
+        id: Date.now() + i + 1000,
+        call_id: newCall.id,
+        closer: form.closer || '',
+        nombre_cliente: form.prospectName,
+        empresa: empresaLabel,
+        numero_cuota: i+1,
+        total_cuotas: cant,
+        monto: monto,
+        fecha_estimada: f.toISOString().slice(0,10),
+        pagada: false,
+        fecha_pagada: null
+      };
+      sbSaveCuota(cuota);
+    }
+  }
+
+  // Si quedó en seguimiento → Hot List
+  if(estado === 'seguimiento' || estado === 'agendada') {
+    let hotLeads = [];
+    try { const h = localStorage.getItem('hotlist_leads'); if(h) hotLeads = JSON.parse(h); } catch(e){}
+    let estadoHot = 'tibio';
+    if(form.callResult === 'attended' && form.pitched === 'si') estadoHot = 'hot';
+    else if(form.callResult === 'noshow') estadoHot = 'frio';
+    const proxFU = new Date(); proxFU.setDate(proxFU.getDate()+3);
+    hotLeads.push({
+      id: Date.now()+1, closer: form.closer || '', nombre: form.prospectName, empresa: empresaLabel,
+      estado: estadoHot, ultimoContacto: fechaCall,
+      proximoFollowup: proxFU.toISOString().slice(0,10),
+      transcript: form.fathomTranscript || '', notas, objecion,
+      analisisCall: '', puntuacion: form.puntuacionLead || null, mensajes: [], fromSalesScript: true
+    });
+    try { localStorage.setItem('hotlist_leads', JSON.stringify(hotLeads)); } catch(e){}
+    // Sincronizar hot lead con Supabase
+    sbSaveHotLead(hotLeads[hotLeads.length-1]);
+  }
+
+  // Reset
+  form = { closer:null, empresa:'sa-dental', callType:null, callDate:'', prospectName:'', prospectEmail:'', prospectPhone:'', puntuacionLead:null, decisionMaker:null, callResult:null, whoCancel:null, noshowType:null, pitched:null, closed:null, noPitchReason:null, programa:null, cashCollected:'', contractedRevenue:'', usaCuotas:false, cantCuotas:'', montoCuota:'', fechaPrimeraCuota:'', objecionCategoria:null, objecionSub:null, objecionMiedoTags:[], objecionMiedoCombo:[], objecionDetalle:'', objecionResumen:'', fathomLink:'', fathomTranscript:'', manualNotes:'' };
+  saveFormToStorage();
+  const badge = document.getElementById('save-badge');
+  badge.style.display = 'inline'; badge.textContent = '✓ Guardado en Dashboard'; badge.style.color = 'var(--green)';
+  document.getElementById('save-btn').classList.add('disabled');
+  document.getElementById('save-btn').classList.remove('enabled');
+  document.querySelectorAll('.sel-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.field-input, .field-textarea, .field-prefix-input').forEach(i=>i.value='');
+  document.querySelectorAll('#who-cancel-section,#noshow-type-section,#attended-section,#pitched-section,#no-pitched-section,#closed-si-section,#closed-no-section,#obj-sub-bomba,#obj-sub-miedo').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('#miedo-combo-dinero,#miedo-combo-logistica').forEach(b=>b.classList.remove('active-combo'));
+  document.getElementById('usa-cuotas').checked = false;
+  document.getElementById('cuotas-config').classList.add('hidden');
+  document.getElementById('cuotas-preview').textContent = '';
+  // Reset puntuación
+  [1,2,3,4,5,6,7,8,9,10].forEach(i=>{const btn=document.getElementById(`punt-btn-${i}`);if(btn){btn.style.borderColor='var(--border2)';btn.style.background='transparent';btn.style.color='var(--text3)';}});
+  const pl=document.getElementById('punt-label');if(pl)pl.innerHTML='Sin puntuar todavía';
+  // Resetear fecha a hoy
+  const di=document.getElementById('call-date-input');if(di)di.value=new Date().toISOString().slice(0,10);
+  setTimeout(()=>{ badge.style.display='none'; }, 4000);
+}
+
+function setPuntLead(n) {
+  form.puntuacionLead = n;
+  saveFormToStorage();
+  const colors = {hot:'var(--red)', tibio:'var(--orange)', frio:'var(--blue)'};
+  const grupo = n>=8?'hot':n>=4?'tibio':'frio';
+  const grupoLabel = {hot:'🔥 Hot',tibio:'⚡ Tibio',frio:'❄️ Frío'}[grupo];
+  const color = {hot:'#f43f5e',tibio:'#fb923c',frio:'#38bdf8'}[grupo];
+  [1,2,3,4,5,6,7,8,9,10].forEach(i=>{
+    const btn = document.getElementById(`punt-btn-${i}`);
+    if(!btn) return;
+    if(i===n){
+      btn.style.borderColor=color;btn.style.background=color+'22';btn.style.color=color;
+    } else {
+      btn.style.borderColor='var(--border2)';btn.style.background='transparent';btn.style.color='var(--text3)';
+    }
+  });
+  const label = document.getElementById('punt-label');
+  if(label) label.innerHTML = `<span style="color:${color};font-weight:600;">${n}/10 — ${grupoLabel}</span>`;
+}
+
+function toggleCuotas(checked) {
+  form.usaCuotas = checked;
+  document.getElementById('cuotas-config').classList.toggle('hidden', !checked);
+  if(!checked) {
+    form.cantCuotas = ''; form.montoCuota = ''; form.fechaPrimeraCuota = '';
+    document.getElementById('cant-cuotas').value = '';
+    document.getElementById('monto-cuota').value = '';
+    document.getElementById('fecha-primera-cuota').value = '';
+  }
+  saveFormToStorage();
+  updateCuotasPreview();
+}
+
+function updateCuotasPreview() {
+  const preview = document.getElementById('cuotas-preview');
+  if(!preview) return;
+  const cant = parseInt(form.cantCuotas) || 0;
+  const monto = parseFloat(form.montoCuota) || 0;
+  const fecha1 = form.fechaPrimeraCuota;
+  if(!cant || !monto || !fecha1) { preview.textContent = ''; return; }
+  const fechas = [];
+  const base = new Date(fecha1 + 'T00:00:00');
+  for(let i=0; i<cant; i++) {
+    const f = new Date(base);
+    f.setDate(f.getDate() + (i*30));
+    fechas.push(f.toISOString().slice(0,10));
+  }
+  preview.innerHTML = `Se generarán <strong style="color:var(--green)">${cant} cuotas</strong> de $${monto.toLocaleString()} cada una (total: $${(cant*monto).toLocaleString()}), cada 30 días desde ${fechas[0]} hasta ${fechas[fechas.length-1]}.`;
+}
+
+// ===== COPY =====
+function copyField(id, btn) {
+  const val = document.getElementById(id).value;
+  if(!val) return;
+  navigator.clipboard.writeText(val).then(() => {
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPIAR'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ===== TIMER =====
+function toggleTimer() {
+  timerRunning = !timerRunning;
+  const btn = document.getElementById('timer-start-btn');
+  if(timerRunning) {
+    btn.textContent = 'PAUSE';
+    btn.classList.add('running');
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      updateTimerDisplay();
+    }, 1000);
+  } else {
+    btn.textContent = 'START';
+    btn.classList.remove('running');
+    clearInterval(timerInterval);
+  }
+}
+function resetTimer() {
+  timerRunning = false;
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  updateTimerDisplay();
+  const btn = document.getElementById('timer-start-btn');
+  btn.textContent = 'START';
+  btn.classList.remove('running');
+}
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
+  const s = (timerSeconds%60).toString().padStart(2,'0');
+  document.getElementById('timer').textContent = m+':'+s;
+}
+
+// ===== NOTES =====
+function openNotes() {
+  document.getElementById('notes-overlay').classList.add('open');
+  document.getElementById('notes-panel').classList.add('open');
+}
+function closeNotes() {
+  document.getElementById('notes-overlay').classList.remove('open');
+  document.getElementById('notes-panel').classList.remove('open');
+  const val = document.getElementById('notes-textarea').value;
+  try { localStorage.setItem(NOTES_KEY, val); } catch(e){}
+}
+document.getElementById('notes-textarea').addEventListener('input', function() {
+  try { localStorage.setItem(NOTES_KEY, this.value); } catch(e){}
+});
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invicta — Team Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+:root {
+  --bg:#080d14;--surface:#0d1520;--surface2:#111d2c;--surface3:#162032;--border:#1e2d3d;--border2:#243444;
+  --accent:#3b82f6;--accent2:#60a5fa;--accent3:rgba(59,130,246,0.12);
+  --cyan:#06b6d4;--cyan2:rgba(6,182,212,0.12);
+  --green:#10b981;--green2:rgba(16,185,129,0.12);--green3:#10b981;
+  --red:#f43f5e;--red2:rgba(244,63,94,0.12);
+  --yellow:#f59e0b;--yellow2:rgba(245,158,11,0.12);
+  --orange:#fb923c;--orange2:rgba(251,146,60,0.12);
+  --blue:#38bdf8;--blue2:rgba(56,189,248,0.12);
+  --text:#e2eaf4;--text2:#6b8094;--text3:#3a4a5a;
+  --radius:14px;--radius-sm:8px;--radius-xs:6px;
+  --shadow:0 4px 24px rgba(0,0,0,.5);
+  --glow-blue:0 0 24px rgba(59,130,246,.18);
+  --glow-green:0 0 20px rgba(16,185,129,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased;}
+
+/* TOP NAV */
+.top-nav{background:rgba(6,10,16,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;position:sticky;top:0;z-index:200;height:44px;}
+.top-nav-link{padding:0 16px;height:44px;display:flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-decoration:none;font-family:'Inter',sans-serif;}
+.top-nav-link:hover{color:var(--text);}
+.top-nav-link.active{color:var(--accent2);border-bottom-color:var(--accent);}
+
+.shell{display:flex;min-height:calc(100vh - 44px);}
+
+/* SIDEBAR */
+.sidebar{width:240px;background:linear-gradient(180deg,var(--surface) 0%,#070f1a 100%);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:44px;height:calc(100vh - 44px);}
+.logo{padding:20px 22px 18px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+.logo-title{font-size:15px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent2) 0%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-user{font-size:12px;color:var(--green);margin-top:4px;font-weight:600;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:1px 10px;cursor:pointer;color:var(--text2);transition:all .2s;font-size:13px;font-weight:500;border-radius:var(--radius-sm);border:1px solid transparent;position:relative;}
+.nav-item:hover{color:var(--text);background:var(--surface2);border-color:var(--border);}
+.nav-item.active{color:#fff;background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(59,130,246,.06));border-color:rgba(59,130,246,.3);box-shadow:var(--glow-blue);}
+.nav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.nav-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;background:var(--green2);color:var(--green);border:1px solid rgba(16,217,160,.2);margin-left:auto;}
+.sidebar-bottom{margin-top:auto;padding:10px 0 12px;border-top:1px solid var(--border);}
+.nav-item-sm{display:flex;align-items:center;gap:10px;padding:8px 14px;margin:1px 10px;cursor:pointer;color:var(--text3);transition:all .2s;font-size:12px;font-weight:500;border-radius:var(--radius-sm);}
+.nav-item-sm:hover{color:var(--text2);background:var(--surface2);}
+.save-indicator{padding:6px 22px;font-size:10px;color:var(--text3);display:flex;align-items:center;gap:6px;}
+.save-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--bg);}
+.topbar{background:rgba(8,13,20,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.page-title{font-size:17px;font-weight:700;letter-spacing:-.3px;}
+.filter-group{display:flex;gap:4px;background:var(--surface2);padding:3px;border-radius:var(--radius-sm);border:1px solid var(--border);}
+.filter-btn{padding:5px 14px;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-weight:500;transition:all .2s;font-family:'Inter',sans-serif;}
+.filter-btn:hover{color:var(--text);}
+.filter-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.35);}
+.filter-btn.active-miedo{background:var(--red);color:#fff;box-shadow:0 2px 8px rgba(244,63,94,.35);}
+.content{padding:28px 32px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+.stat-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;filter:blur(30px);opacity:.4;}
+.stat-card.purple::after{background:var(--accent);}
+.stat-card.green::after{background:var(--green);}
+.stat-card.red::after{background:var(--red);}
+.stat-card.yellow::after{background:var(--yellow);}
+.stat-card-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px;}
+.stat-card.purple .stat-card-icon{background:var(--accent3);}
+.stat-card.green .stat-card-icon{background:var(--green2);}
+.stat-card.red .stat-card-icon{background:var(--red2);}
+.stat-card.yellow .stat-card-icon{background:var(--yellow2);}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-weight:600;}
+.stat-value{font-size:36px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;}
+.stat-value.purple{color:var(--accent2);}
+.stat-value.green{color:var(--green);}
+.stat-value.red{color:var(--red);}
+.stat-value.yellow{color:var(--yellow);}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:6px;}
+
+/* SECTIONS */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.section-title{font-size:14px;font-weight:700;letter-spacing:-.2px;}
+.section-badge{font-size:10px;padding:3px 10px;border-radius:20px;background:var(--accent3);color:var(--accent2);font-family:'DM Mono',monospace;border:1px solid rgba(59,130,246,.2);font-weight:600;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:11px 14px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:700;}
+td{padding:13px 14px;font-size:13px;border-bottom:1px solid rgba(37,37,56,.6);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.015);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-cerrada{background:var(--green2);color:var(--green);border:1px solid rgba(16,217,160,.2);}
+.badge-no-cerrada{background:var(--red2);color:var(--red);border:1px solid rgba(244,63,110,.2);}
+.badge-no-califica{background:var(--surface3);color:var(--text3);border:1px solid var(--border2);}
+.badge-no-pitcheo{background:var(--orange2);color:var(--orange);border:1px solid rgba(251,146,60,.2);}
+.badge-cuota-cobrada{background:var(--accent3);color:var(--accent2);border:1px solid rgba(59,130,246,.2);}
+.badge-seguimiento{background:var(--yellow2);color:var(--yellow);border:1px solid rgba(245,158,11,.2);}
+.badge-agendada{background:var(--accent3);color:var(--accent2);border:1px solid rgba(59,130,246,.2);}
+
+/* INPUTS */
+.input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:all .2s;}
+.input:focus{border-color:var(--accent);background:var(--surface3);box-shadow:0 0 0 3px rgba(59,130,246,.1);}
+.input::placeholder{color:var(--text3);}
+textarea.input{resize:vertical;min-height:120px;line-height:1.6;}
+select.input{cursor:pointer;}
+.input-group{margin-bottom:16px;}
+.input-label{font-size:11px;color:var(--text2);margin-bottom:7px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;transition:all .2s;letter-spacing:-.1px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#1d4ed8);color:#fff;box-shadow:0 2px 12px rgba(59,130,246,.3);}
+.btn-primary:hover{box-shadow:0 4px 20px rgba(59,130,246,.4);transform:translateY(-1px);}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent2);background:var(--surface3);}
+.btn-danger{background:var(--red2);color:var(--red);border:1px solid rgba(244,63,110,.2);}
+.btn-danger:hover{background:rgba(244,63,110,.2);}
+.btn-edit{background:var(--accent3);color:var(--accent2);border:1px solid rgba(59,130,246,.2);}
+.btn-edit:hover{background:rgba(59,130,246,.2);}
+.btn-sm{padding:6px 12px;font-size:11px;}
+
+/* AI */
+.ai-output{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:18px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;min-height:60px;}
+.ai-loading{color:var(--text3);font-style:italic;display:flex;align-items:center;gap:10px;}
+.spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* LEADS */
+.leads-grid{display:grid;gap:14px;}
+.lead-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:all .2s;}
+.lead-card:hover{border-color:rgba(59,130,246,.35);box-shadow:var(--glow-blue);}
+.lead-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.lead-name{font-weight:700;font-size:14px;}
+.lead-meta{font-size:11px;color:var(--text3);margin-top:3px;}
+.lead-followups{margin-top:14px;}
+.followup-item{display:flex;gap:10px;padding:9px 12px;background:var(--surface);border-radius:var(--radius-xs);margin-bottom:6px;font-size:12px;color:var(--text2);border:1px solid var(--border);}
+
+/* OBJECTIONS */
+.objection-list{display:grid;gap:8px;}
+.objection-item{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);transition:border-color .2s;}
+.objection-item:hover{border-color:var(--border2);}
+.objection-count{font-family:'DM Mono',monospace;font-size:11px;padding:3px 10px;border-radius:20px;background:var(--red2);color:var(--red);font-weight:700;}
+
+/* RATE BAR */
+.rate-bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:10px;border:1px solid var(--border);}
+.rate-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+/* META CARD */
+.meta-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:border-color .2s;}
+.meta-card:hover{border-color:var(--border2);}
+.meta-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.meta-title{font-size:13px;font-weight:700;}
+.meta-values{font-size:12px;color:var(--text2);}
+.meta-bar-wrap{height:8px;background:var(--surface);border-radius:4px;overflow:hidden;margin-bottom:8px;border:1px solid var(--border);}
+.meta-bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.meta-bar-fill.purple{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.meta-bar-fill.green{background:linear-gradient(90deg,var(--green),#34d399);}
+.meta-bar-fill.yellow{background:linear-gradient(90deg,var(--yellow),#fbbf24);}
+.meta-bar-fill.red{background:linear-gradient(90deg,var(--red),#fb7185);}
+.meta-pct{font-size:11px;color:var(--text3);}
+.meta-pct span{color:var(--text2);font-weight:600;}
+
+/* API BANNER */
+.api-banner{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+.api-banner-text{font-size:13px;color:var(--text2);line-height:1.6;}
+.api-banner-text a{color:var(--accent2);text-decoration:none;}
+.api-key-indicator{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;}
+.api-key-indicator.ok{background:var(--green2);color:var(--green);border:1px solid rgba(16,217,160,.2);}
+.api-key-indicator.missing{background:var(--red2);color:var(--red);border:1px solid rgba(244,63,110,.2);}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:28px;width:600px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+.modal-sm{width:440px;}
+.modal-lg{width:760px;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.hidden{display:none !important;}
+.modal-title{font-size:16px;font-weight:700;}
+.modal-close{cursor:pointer;color:var(--text3);font-size:22px;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .15s;}
+.modal-close:hover{color:var(--text);background:var(--surface2);}
+.divider{border:none;border-top:1px solid var(--border);margin:22px 0;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3);}
+.empty-state-icon{font-size:36px;margin-bottom:12px;opacity:.7;}
+.empty-state-text{font-size:13px;line-height:1.6;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+
+/* HOT LIST */
+.hotlist-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.hl-filter{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;transition:all .2s;}
+.hl-filter:hover{border-color:var(--accent);color:var(--accent2);}
+.hl-filter.active{background:var(--accent3);border-color:rgba(59,130,246,.35);color:var(--accent2);}
+.hotlist-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.hl-card{background:var(--surface2);border-radius:var(--radius);padding:18px;transition:all .2s;border:1px solid var(--border);border-left:3px solid var(--border);}
+.hl-card.hot{border-left-color:var(--red);}
+.hl-card.tibio{border-left-color:var(--orange);}
+.hl-card.frio{border-left-color:var(--blue);}
+.hl-card:hover{box-shadow:var(--shadow);}
+.hl-card-name{font-size:15px;font-weight:700;margin-bottom:6px;}
+.hl-status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.hl-status-badge.hot{background:var(--red2);color:var(--red);}
+.hl-status-badge.tibio{background:var(--orange2);color:var(--orange);}
+.hl-status-badge.frio{background:var(--blue2);color:var(--blue);}
+.hl-card-meta{font-size:11px;color:var(--text2);margin-top:8px;}
+.hl-card-notes{font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.hl-card-actions{display:flex;gap:6px;margin-top:14px;}
+
+/* PERFORMANCE */
+.perf-weekly{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.perf-week-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.perf-week-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;}
+.perf-week-val{font-size:24px;font-weight:800;font-family:'DM Mono',monospace;}
+.perf-week-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* BADGES GAMIFICATION */
+.badges-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.badge-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;transition:all .2s;}
+.badge-card.unlocked{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);}
+.badge-card.unlocked:hover{box-shadow:0 0 20px rgba(245,158,11,.1);}
+.badge-icon{font-size:28px;margin-bottom:8px;display:block;filter:grayscale(1);opacity:.3;}
+.badge-card.unlocked .badge-icon{filter:none;opacity:1;}
+.badge-name{font-size:12px;font-weight:700;color:var(--text3);}
+.badge-card.unlocked .badge-name{color:var(--yellow);}
+.badge-desc{font-size:11px;color:var(--text3);margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a class="top-nav-link" href="/sales-script">📋 Sales Script</a>
+  <a class="top-nav-link active" href="/dashboard">📊 Dashboard</a>
+</nav>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title">Invicta</div>
+      <div class="logo-user">Team Dashboard</div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="switchTab('overview')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="switchTab('hotlist')"><span class="nav-icon">🔥</span> Hot List</div>
+      <div class="nav-item" onclick="switchTab('cuotas')"><span class="nav-icon">💳</span> Cuotas</div>
+      <div class="nav-item" onclick="switchTab('performance')"><span class="nav-icon">📈</span> Performance</div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-item-sm" onclick="exportData()"><span>💾</span> Exportar datos</div>
+      <div class="nav-item-sm" onclick="document.getElementById('import-file').click()"><span>📂</span> Importar datos</div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      <div class="nav-item-sm" onclick="openModal('modal-settings')"><span>⚙️</span> Configuración</div>
+      <div class="save-indicator">
+        <div class="save-dot"></div>
+        <span id="save-status">Guardado automático ON</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="filter-group">
+          <button class="filter-btn active" id="ag-filter-todas" onclick="setAgencia('todas',this)">Todas</button>
+          <button class="filter-btn" id="ag-filter-dental" onclick="setAgencia('SA Dental',this)"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:2px;" xmlns="http://www.w3.org/2000/svg"><path d="M4 21V13M8.5 21V9M13 21V4.5L15.5 7M18 21V10.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Invicta</button>
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn active" id="cl-filter-todos" onclick="setCloser('todos',this)">Closers</button>
+          <button class="filter-btn" id="cl-filter-manuela" onclick="setCloser('manuela',this)">Manuela</button>
+          <button class="filter-btn" id="cl-filter-leandro" onclick="setCloser('leandro',this)">Leandro</button>
+          <button class="filter-btn" id="cl-filter-ariel" onclick="setCloser('ariel',this)">Ariel</button>
+        </div>
+        <input type="text" id="lead-search-input" placeholder="🔍 Buscar lead..." oninput="setLeadSearch(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;padding:6px 10px;width:150px;font-family:'Inter',sans-serif;">
+        <div class="filter-group">
+          <button class="filter-btn active" onclick="setFilter('dia',this)">Hoy</button>
+          <button class="filter-btn" onclick="setFilter('semana',this)">Semana</button>
+          <button class="filter-btn" onclick="setFilter('mes',this)">Mes</button>
+          <button class="filter-btn" onclick="setFilter('todo',this)">Todo</button>
+          </div>
+          <div id="mes-nav-container" style="display:none;align-items:center;gap:4px;background:var(--surface2);padding:3px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);">
+            <button onclick="navMes(-1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:20px;line-height:1;padding:0 4px;">‹</button>
+            <span id="mes-nav" style="font-size:12px;font-weight:600;color:var(--text);min-width:130px;text-align:center;"></span>
+            <button id="mes-nav-next" onclick="navMes(1)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px;" disabled>›</button>
+          </div>
+          <div style="display:none">
+          <button class="filter-btn" onclick="setFilter('todo',this)">Todo</button>
+        
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ===== OVERVIEW ===== -->
+      <div id="tab-overview" class="tab-content active">
+        <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px;">
+          <div class="stat-card purple"><div class="stat-card-icon">📞</div><div class="stat-label">Calls Totales</div><div class="stat-value purple" id="stat-total">0</div><div class="stat-sub">Este período</div></div>
+          <div class="stat-card green"><div class="stat-card-icon">✅</div><div class="stat-label">Cerradas</div><div class="stat-value green" id="stat-cerradas">0</div><div class="stat-sub" id="stat-rate">0% tasa de cierre</div></div>
+          <div class="stat-card yellow"><div class="stat-card-icon">🔄</div><div class="stat-label">En Seguimiento</div><div class="stat-value yellow" id="stat-seguimiento">0</div><div class="stat-sub">Pendientes</div></div>
+          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">⏸️</div><div class="stat-label">No se Pitcheó</div><div class="stat-value" style="color:var(--orange)" id="stat-no-pitcheo">0</div><div class="stat-sub">No entra en tasa</div></div>
+          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificada</div><div class="stat-value" style="color:var(--text3)" id="stat-no-califica">0</div><div class="stat-sub">No entra en tasa</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px;">
+          <div class="section" style="margin-bottom:0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:12px;">📊 Tasa de Cierre</div>
+            <div style="font-size:42px;font-weight:800;font-family:'DM Mono';color:var(--green);line-height:1;" id="tasa-total">0%</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;margin-bottom:10px;" id="tasa-total-sub">0 cerradas / 0 calls</div>
+            <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border);">
+              <div id="tasa-total-bar" style="height:100%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:4px;width:0%;transition:width .6s;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header" style="margin-bottom:16px;">
+              <div class="section-title">🧮 Calculadora de Meta</div>
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Ingresá tu meta y ticket promedio para saber cuántas calls necesitás.</div>
+            <div class="form-row" style="margin-bottom:12px;">
+              <div class="input-group">
+                <label class="input-label">Meta de ingresos ($)</label>
+                <div style="display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                  <span style="padding:10px 10px 10px 12px;color:var(--text2);font-weight:600;font-size:13px;">$</span>
+                  <input id="calc-meta-ingresos" type="number" placeholder="5000" style="flex:1;background:transparent;border:none;padding:10px 12px 10px 0;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;" oninput="updateCalculadora()">
+                </div>
+              </div>
+              <div class="input-group">
+                <label class="input-label">Ticket promedio ($)</label>
+                <div style="display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                  <span style="padding:10px 10px 10px 12px;color:var(--text2);font-weight:600;font-size:13px;">$</span>
+                  <input id="calc-ticket" type="number" placeholder="3000" value="3000" style="flex:1;background:transparent;border:none;padding:10px 12px 10px 0;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;" oninput="updateCalculadora()">
+                </div>
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:16px;">
+              <div class="input-group">
+                <label class="input-label">Tasa de cierre esperada (%)</label>
+                <div style="display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                  <input id="calc-tasa" type="number" placeholder="28" value="28" style="flex:1;background:transparent;border:none;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;" oninput="updateCalculadora()">
+                  <span style="padding:10px 12px 10px 0;color:var(--text2);font-weight:600;font-size:13px;">%</span>
+                </div>
+              </div>
+              <div class="input-group">
+                <label class="input-label">Comisión (%)</label>
+                <div style="display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                  <input id="calc-comision" type="number" placeholder="10" value="10" style="flex:1;background:transparent;border:none;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;" oninput="updateCalculadora()">
+                  <span style="padding:10px 12px 10px 0;color:var(--text2);font-weight:600;font-size:13px;">%</span>
+                </div>
+              </div>
+            </div>
+            <div id="calculadora-result" style="background:var(--surface2);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border);">
+              <div style="font-size:12px;color:var(--text3);text-align:center;">Completá los campos para ver el cálculo</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-header" style="margin-bottom:16px;">
+              <div class="section-title">💰 Ingresos del Mes</div>
+              <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);padding:2px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);">
+                <button onclick="navIngresosMes(-1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;">‹</button>
+                <span class="section-badge" id="ingresos-mes-label" style="min-width:110px;text-align:center;"></span>
+                <button id="ingresos-mes-next" onclick="navIngresosMes(1)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;" disabled>›</button>
+              </div>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
+              <div style="font-size:36px;font-weight:800;font-family:'DM Mono';color:var(--green)" id="ingresos-actuales">$0</div>
+              <div style="font-size:14px;color:var(--text2);">/ <span id="ingresos-meta-label" style="color:var(--text);">—</span></div>
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">comisiones este mes</div>
+            <div style="height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;margin-bottom:10px;border:1px solid var(--border);">
+              <div id="ingresos-bar" style="height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),#34d399);transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+              <div style="font-size:11px;color:var(--text3)" id="ingresos-pct">0% completado</div>
+              <div style="font-size:11px;color:var(--text3)" id="ingresos-falta">— para la meta</div>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:16px;">
+              <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;font-weight:600;">Por agencia</div>
+              <div style="display:flex;gap:10px;">
+                <div style="background:var(--surface2);border-radius:8px;padding:12px 16px;flex:1;border:1px solid var(--border)">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Comisión</div>
+                  <div style="font-size:18px;font-weight:700;font-family:'DM Mono';color:var(--green)" id="comision-sa">$0</div>
+                  <select id="comision-invicta-pct" onchange="saveComisionConfig()" style="margin-top:8px;width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;padding:3px 6px;">
+                    <option value="10">10%</option>
+                    <option value="15">15%</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Objeciones Frecuentes</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div id="obj-mes-nav-container" style="display:none;align-items:center;gap:2px;background:var(--surface2);padding:2px 4px;border-radius:6px;border:1px solid var(--border);">
+                <button onclick="navObjMes(-1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;">‹</button>
+                <span id="obj-mes-label" style="font-size:11px;font-weight:600;color:var(--text);min-width:90px;text-align:center;"></span>
+                <button id="obj-mes-nav-next" onclick="navObjMes(1)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;" disabled>›</button>
+              </div>
+              <div style="display:flex;gap:4px;background:var(--surface2);padding:3px;border-radius:6px;border:1px solid var(--border)">
+                <button class="filter-btn active" id="obj-filter-semana" onclick="setObjFilter('semana',this)" style="padding:3px 10px;font-size:11px;">Semana</button>
+                <button class="filter-btn" id="obj-filter-mes" onclick="setObjFilter('mes',this)" style="padding:3px 10px;font-size:11px;">Mes</button>
+                <button class="filter-btn" id="obj-filter-todo" onclick="setObjFilter('todo',this)" style="padding:3px 10px;font-size:11px;">Todo</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;">
+            <div style="flex-shrink:0;position:relative;"><canvas id="objections-chart" width="180" height="180"></canvas></div>
+            <div id="objection-list" style="flex:1;min-width:180px;"><div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">Cargá calls para ver objeciones</div></div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Historial de Calls</div>
+            <button class="btn btn-primary btn-sm" onclick="openAddCall()">+ Nueva Call</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Lead</th><th>Agencia</th><th>Estado</th><th>Objeción</th><th>Programa</th><th>Cash</th><th></th></tr></thead>
+              <tbody id="calls-table-body"><tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">Sin calls registradas aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== HOT LIST ===== -->
+      <div id="tab-hotlist" class="tab-content">
+        <div class="section-header" style="margin-bottom:20px;">
+          <div style="font-size:17px;font-weight:700;">🔥 Hot List — Seguimiento de Leads</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddHotLead()">➕ Agregar Lead</button>
+        </div>
+        <div class="hotlist-filters">
+          <button class="hl-filter active" onclick="filterHotlist('todos',this)">Todos</button>
+          <button class="hl-filter" onclick="filterHotlist('hot',this)">🔥 Hot (8-10)</button>
+          <button class="hl-filter" onclick="filterHotlist('tibio',this)">⚡ Tibio (4-7)</button>
+          <button class="hl-filter" onclick="filterHotlist('frio',this)">❄️ Frío (1-3)</button>
+          <button class="hl-filter" onclick="filterHotlist('proximos7',this)">📅 Próximos 7 días</button>
+        </div>
+        <div id="hotlist-grid">
+          <div class="empty-state"><div class="empty-state-icon">🔥</div><div class="empty-state-text">No hay leads en tu Hot List aún.<br>Agregá uno con el botón de arriba.</div></div>
+        </div>
+      </div>
+
+      <!-- ===== CUOTAS ===== -->
+      <div id="tab-cuotas" class="tab-content">
+        <div class="section-header" style="margin-bottom:20px;">
+          <div style="font-size:17px;font-weight:700;">💳 Cuotas — Plan de Pagos</div>
+        </div>
+        <div class="stats-row" style="margin-bottom:20px;">
+          <div class="stat-card yellow"><div class="stat-card-icon">⏳</div><div class="stat-label">Pendientes</div><div class="stat-value yellow" id="cuotas-stat-pendientes">0</div><div class="stat-sub">Por cobrar</div></div>
+          <div class="stat-card green"><div class="stat-card-icon">✅</div><div class="stat-label">Cobradas</div><div class="stat-value green" id="cuotas-stat-cobradas">0</div><div class="stat-sub">Este período</div></div>
+          <div class="stat-card red"><div class="stat-card-icon">⚠️</div><div class="stat-label">Vencidas</div><div class="stat-value red" id="cuotas-stat-vencidas">0</div><div class="stat-sub">Sin cobrar, fecha pasada</div></div>
+          <div class="stat-card purple"><div class="stat-card-icon">💰</div><div class="stat-label">Monto Pendiente</div><div class="stat-value purple" id="cuotas-stat-monto">$0</div><div class="stat-sub">Total por cobrar</div></div>
+        </div>
+        <div class="hotlist-filters">
+          <button class="hl-filter active" onclick="filterCuotas('todas',this)">Todas</button>
+          <button class="hl-filter" onclick="filterCuotas('pendientes',this)">⏳ Pendientes</button>
+          <button class="hl-filter" onclick="filterCuotas('vencidas',this)">⚠️ Vencidas</button>
+          <button class="hl-filter" onclick="filterCuotas('cobradas',this)">✅ Cobradas</button>
+        </div>
+        <div class="section">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cliente</th><th>Empresa</th><th>Cuota</th><th>Monto</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="cuotas-table-body"><tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">Sin cuotas registradas aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+<!-- MODAL EDITAR CUOTA -->
+<div id="modal-edit-cuota" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-edit-cuota')">
+  <div class="modal" style="max-width:520px;width:92%;">
+    <div class="modal-header">
+      <h3 style="margin:0;font-size:16px;">✏️ Editar cuota</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-edit-cuota')" style="padding:4px 10px;">✕</button>
+    </div>
+    <div id="edit-cuota-content" style="padding:16px 20px 20px;"></div>
+  </div>
+</div>
+
+      <!-- ===== PERFORMANCE ===== -->
+      <div id="tab-performance" class="tab-content">
+        <div class="stats-row" style="margin-bottom:24px;">
+          <div class="stat-card purple"><div class="stat-card-icon">📞</div><div class="stat-label">Total Calls (mes)</div><div class="stat-value purple" id="perf-calls">0</div><div class="stat-sub">Este mes</div></div>
+          <div class="stat-card green"><div class="stat-card-icon">✅</div><div class="stat-label">Tasa de Cierre</div><div class="stat-value green" id="perf-tasa">0%</div><div class="stat-sub">Este mes</div></div>
+          <div class="stat-card yellow"><div class="stat-card-icon">🔥</div><div class="stat-label">Leads Activos</div><div class="stat-value yellow" id="perf-leads-activos">0</div><div class="stat-sub">En seguimiento</div></div>
+          <div class="stat-card red"><div class="stat-card-icon">🎯</div><div class="stat-label">Meta Mensual</div><div class="stat-value red" id="perf-meta-pct">—</div><div class="stat-sub">% completado</div></div>
+        </div>
+
+        <div class="two-col" style="margin-bottom:20px;">
+          <div class="section">
+            <div class="section-header"><div class="section-title">🎯 Fijar Metas Mensuales</div><span class="section-badge" id="perf-month-label"></span></div>
+            <div class="input-group"><label class="input-label">Calls objetivo</label><input class="input" id="meta-calls" type="number" min="1" placeholder="Ej: 60" oninput="renderMetasProgress()"></div>
+            <div class="input-group"><label class="input-label">Cierres objetivo</label><input class="input" id="meta-cierres" type="number" min="1" placeholder="Ej: 15" oninput="renderMetasProgress()"></div>
+            <div class="input-group"><label class="input-label">Tasa de cierre objetivo (%)</label><input class="input" id="meta-tasa" type="number" min="1" max="100" placeholder="Ej: 25" oninput="renderMetasProgress()"></div>
+            <button class="btn btn-primary btn-sm" onclick="saveMetas()">💾 Guardar Metas</button>
+          </div>
+          <div class="section">
+            <div class="section-header"><div class="section-title">🧮 Calculadora — ¿Cuánto falta?</div></div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Basado en tu ritmo actual, esto es lo que necesitás para llegar a la meta.</div>
+            <div id="calculadora-output">
+              <div style="font-size:12px;color:var(--text3);text-align:center;padding:20px;">Establecé metas para ver el cálculo.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <div class="meta-card">
+            <div class="meta-header"><div><div class="meta-title">📞 Calls realizadas</div><div class="meta-values" id="meta-calls-vals">— / — calls</div></div><div style="font-size:22px;font-weight:700;font-family:'DM Mono';color:var(--accent2)" id="meta-calls-pct">—</div></div>
+            <div class="meta-bar-wrap"><div class="meta-bar-fill purple" id="meta-calls-bar" style="width:0%"></div></div>
+            <div class="meta-pct" id="meta-calls-status">Establecé una meta para ver el progreso</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-header"><div><div class="meta-title">🏅 Cierres logrados</div><div class="meta-values" id="meta-cierres-vals">— / — cierres</div></div><div style="font-size:22px;font-weight:700;font-family:'DM Mono';color:var(--green)" id="meta-cierres-pct">—</div></div>
+            <div class="meta-bar-wrap"><div class="meta-bar-fill green" id="meta-cierres-bar" style="width:0%"></div></div>
+            <div class="meta-pct" id="meta-cierres-status">Establecé una meta para ver el progreso</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-header"><div><div class="meta-title">📈 Tasa de cierre</div><div class="meta-values" id="meta-tasa-vals">—% / —% objetivo</div></div><div style="font-size:22px;font-weight:700;font-family:'DM Mono';color:var(--yellow)" id="meta-tasa-pct">—</div></div>
+            <div class="meta-bar-wrap"><div class="meta-bar-fill yellow" id="meta-tasa-bar" style="width:0%"></div></div>
+            <div class="meta-pct" id="meta-tasa-status">Establecé una meta para ver el progreso</div>
+          </div>
+        </div>
+
+        <div class="section" style="margin-bottom:24px;">
+          <div class="section-header"><div class="section-title">📅 Esta semana vs semana anterior</div></div>
+          <div class="perf-weekly">
+            <div class="perf-week-card"><div class="perf-week-label">Calls</div><div class="perf-week-val" id="pw-calls-cur" style="color:var(--accent2)">0</div><div class="perf-week-sub">vs <span id="pw-calls-prev">0</span> semana anterior</div></div>
+            <div class="perf-week-card"><div class="perf-week-label">Cierres</div><div class="perf-week-val" id="pw-cierres-cur" style="color:var(--green)">0</div><div class="perf-week-sub">vs <span id="pw-cierres-prev">0</span> semana anterior</div></div>
+            <div class="perf-week-card"><div class="perf-week-label">Follow-ups</div><div class="perf-week-val" id="pw-followups-cur" style="color:var(--yellow)">0</div><div class="perf-week-sub">vs <span id="pw-followups-prev">0</span> semana anterior</div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header"><div class="section-title">🏆 Logros</div></div>
+          <div class="badges-grid" id="badges-grid">
+            <div class="badge-card" id="badge-primera-venta"><span class="badge-icon">🥇</span><div class="badge-name">Primera Venta</div><div class="badge-desc">Cerrá tu primera call</div></div>
+            <div class="badge-card" id="badge-5calls"><span class="badge-icon">⚡</span><div class="badge-name">5 Calls en un día</div><div class="badge-desc">Registrá 5 calls en un día</div></div>
+            <div class="badge-card" id="badge-semana-fuego"><span class="badge-icon">🔥</span><div class="badge-name">Semana de fuego</div><div class="badge-desc">10+ calls en una semana</div></div>
+            <div class="badge-card" id="badge-tasa30"><span class="badge-icon">🏆</span><div class="badge-name">Tasa +30%</div><div class="badge-desc">Alcanzá 30% de cierre</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD/EDIT CALL -->
+<div class="modal-overlay" id="modal-add-call">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-call-title">Nueva Call</div><span class="modal-close" onclick="closeModal('modal-add-call')">×</span></div>
+    <div class="form-row">
+      <div class="input-group"><label class="input-label">Nombre del Lead *</label><input class="input" id="call-lead-name" type="text" placeholder="Nombre completo"></div>
+      <div class="input-group"><label class="input-label">Fecha</label><input class="input" id="call-fecha" type="date"></div>
+    </div>
+    <div class="input-group"><label class="input-label">Estado *</label><select class="input" id="call-estado" onchange="toggleCuotaCheckbox()"><option value="">Seleccionar...</option><option value="cerrada">✅ Cerrada</option><option value="no-cerrada">❌ No cerrada</option><option value="seguimiento">🔄 Seguimiento</option><option value="agendada">📅 Re-agendada</option><option value="no-pitcheo">⏸️ No se pitcheó</option><option value="no-califica">🚫 No calificaba</option></select></div>
+
+    <div id="call-primera-cuota-wrap" class="hidden input-group" style="background:var(--surface2);border-radius:8px;padding:10px 12px;">
+      <div class="input-group" style="margin-bottom:10px;">
+        <label class="input-label">Monto cobrado — fee ($)</label>
+        <input class="input" id="call-cash-collected" type="number" min="0" placeholder="Ej: 3500">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Este monto sí cuenta para tu cobro/comisión del mes, aunque todavía no haya pagado la primera cuota.</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" id="call-primera-cuota" style="width:16px;height:16px;">
+        ¿Ya pagó la primera cuota?
+      </label>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Si solo pagó el fee, dejá esto sin marcar — no va a contar como cierre en la tasa hasta que se confirme la primera cuota.</div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Categoría de objeción</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;" id="modal-obj-cat-buttons">
+        <button type="button" class="filter-btn" id="modal-obj-bomba" onclick="modalSelectObjCat('bomba')">🌫️ Bomba</button>
+        <button type="button" class="filter-btn" id="modal-obj-dinero" onclick="modalSelectObjCat('dinero')">💰 Dinero</button>
+        <button type="button" class="filter-btn" id="modal-obj-logistica" onclick="modalSelectObjCat('logistica')">🚚 Logística</button>
+        <button type="button" class="filter-btn" id="modal-obj-miedo" onclick="modalSelectObjCat('miedo')">😰 Miedo</button>
+      </div>
+    </div>
+
+    <div id="modal-obj-sub-bomba" class="hidden input-group">
+      <label class="input-label">Tipo de bomba de humo</label>
+      <select class="input" id="modal-obj-bomba-select" onchange="modalUpdateObjValue()">
+        <option value="pensarlo">🤔 Tengo que pensarlo</option>
+        <option value="socio-pareja">🤝 Pareja / Socio</option>
+        <option value="dias">📅 Lo pienso en unos días</option>
+        <option value="mail">📧 Mandámelo por mail</option>
+        <option value="numeros">📊 Revisar mis números</option>
+        <option value="tarjeta">💳 Se llevó la tarjeta</option>
+        <option value="otra">📝 Otra bomba de humo</option>
+      </select>
+    </div>
+
+    <div id="modal-obj-sub-miedo" class="hidden input-group">
+      <label class="input-label">¿A qué le tiene miedo? <span style="font-weight:400;color:var(--text3)">(podés marcar varios)</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <button type="button" class="filter-btn" id="modal-miedo-yo" onclick="modalToggleMiedo('yo')">🙋 Yo</button>
+        <button type="button" class="filter-btn" id="modal-miedo-tu" onclick="modalToggleMiedo('tu')">🤝 Tú</button>
+        <button type="button" class="filter-btn" id="modal-miedo-mañana" onclick="modalToggleMiedo('mañana')">🔮 Mañana</button>
+        <button type="button" class="filter-btn" id="modal-miedo-ayer" onclick="modalToggleMiedo('ayer')">📉 Ayer</button>
+      </div>
+      <label class="input-label">¿Se combina con otra categoría?</label>
+      <div style="display:flex;gap:6px;">
+        <button type="button" class="filter-btn" id="modal-miedo-combo-dinero" onclick="modalToggleMiedoCombo('dinero')">+ Dinero</button>
+        <button type="button" class="filter-btn" id="modal-miedo-combo-logistica" onclick="modalToggleMiedoCombo('logistica')">+ Logística</button>
+      </div>
+    </div>
+
+    <input type="hidden" id="call-objecion">
+    <div class="input-group"><label class="input-label">Notas</label><textarea class="input" id="call-notas" style="min-height:80px" placeholder="Resumen de la call..."></textarea></div>
+    <input type="hidden" id="call-edit-id">
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-call')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-call" onclick="saveCall()">Guardar Call</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT LEAD -->
+<div class="modal-overlay" id="modal-edit-lead">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Editar Lead</div><span class="modal-close" onclick="closeModal('modal-edit-lead')">×</span></div>
+    <div class="input-group"><label class="input-label">Nombre</label><input class="input" id="edit-lead-nombre" type="text"></div>
+    <div class="input-group"><label class="input-label">Fecha</label><input class="input" id="edit-lead-fecha" type="date"></div>
+    <div class="input-group"><label class="input-label">Probabilidad de Cierre</label><select class="input" id="edit-lead-prob"><option value="Alta">Alta</option><option value="Media">Media</option><option value="Baja">Baja</option></select></div>
+    <input type="hidden" id="edit-lead-id">
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-lead')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEditLead()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LEAD DETAIL -->
+<div class="modal-overlay" id="modal-lead-detail">
+  <div class="modal" style="width:680px">
+    <div class="modal-header"><div class="modal-title" id="modal-lead-title">Carpeta del Lead</div><span class="modal-close" onclick="closeModal('modal-lead-detail')">×</span></div>
+    <div id="modal-lead-content"></div>
+  </div>
+</div>
+
+<!-- MODAL ADD HOT LEAD -->
+<div class="modal-overlay" id="modal-add-hot-lead">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-hot-title">Agregar Lead — Hot List</div><span class="modal-close" onclick="closeModal('modal-add-hot-lead')">×</span></div>
+    <div class="form-row">
+      <div class="input-group"><label class="input-label">Nombre del Lead *</label><input class="input" id="hl-nombre" type="text" placeholder="Nombre completo"></div>
+      <div class="input-group"><label class="input-label">Estado *</label><select class="input" id="hl-estado"><option value="hot">🔥 Hot</option><option value="tibio">⚡ Tibio</option><option value="frio">❄️ Frío</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="input-group"><label class="input-label">Último contacto</label><input class="input" id="hl-ultimo-contacto" type="date"></div>
+      <div class="input-group"><label class="input-label">Próximo follow-up</label><input class="input" id="hl-proximo-followup" type="date"></div>
+    </div>
+    <div class="input-group"><label class="input-label">Transcript (opcional)</label><textarea class="input" id="hl-transcript" style="min-height:100px" placeholder="Pegá el transcript de la última call..."></textarea></div>
+    <div class="input-group"><label class="input-label">Notas personales</label><textarea class="input" id="hl-notas" style="min-height:80px" placeholder="Contexto, objeciones, próximos pasos..."></textarea></div>
+    <input type="hidden" id="hl-edit-id">
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-hot-lead')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveHotLead()">Guardar Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HOT LEAD DETAIL -->
+<div class="modal-overlay" id="modal-hot-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="modal-hot-detail-title">Lead Detail</div><span class="modal-close" onclick="closeModal('modal-hot-detail')">×</span></div>
+    <div id="modal-hot-detail-content"></div>
+  </div>
+</div>
+
+<!-- MODAL SETTINGS -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">⚙️ Configuración</div><span class="modal-close" onclick="closeModal('modal-settings')">×</span></div>
+    <div style="margin-bottom:18px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">🔑 API Key de OpenAI</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">Para usar las funciones de análisis con IA.<br><a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent2)">→ Crear una API key en OpenAI</a></div>
+      <div class="input-group"><label class="input-label">Tu API Key</label><input class="input" id="settings-api-key" type="password" placeholder="sk-..."></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:4px" id="settings-key-status"></div>
+    </div>
+    <hr class="divider">
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal('modal-settings')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">💾 Guardar Key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== SUPABASE =====
+const SUPABASE_URL = 'PEGAR_TU_SUPABASE_URL_ACA';
+const SUPABASE_KEY = 'PEGAR_TU_SUPABASE_ANON_KEY_ACA';
+
+async function sbFetch(table, method='GET', body=null, query=''){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      // FIX #1: Agregado resolution=merge-duplicates para que el upsert funcione correctamente
+      // Sin esto, Supabase no sabía cómo manejar conflictos de ID y el update fallaba silenciosamente
+      'Prefer': method==='POST'?'resolution=merge-duplicates,return=minimal':'',
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  if(!res.ok) { const e=await res.text(); console.error('Supabase error:',e); return null; }
+  if(method==='GET') return await res.json();
+  return true;
+}
+
+async function loadCalls(){
+  const data = await sbFetch('calls','GET',null,'?order=created_at.asc');
+  if(!data) return [];
+  return data.map(c=>({
+    id:c.id, closer:c.closer||'', nombre:c.nombre, empresa:c.empresa||'', estado:c.estado,
+    fecha:c.fecha, objecion:c.objecion||'', programa:c.programa||'',
+    cashCollected:c.cash_collected||0, contractedRevenue:c.contracted_revenue||0, notas:c.notas||'',
+    primeraCuotaPagada:c.primera_cuota_pagada===false?false:true,
+    feePerdido:!!c.fee_perdido
+  }));
+}
+
+async function saveCall_sb(call){
+  await sbFetch('calls','POST',{
+    id:call.id, closer:call.closer||'', nombre:call.nombre, empresa:call.empresa||'', estado:call.estado,
+    fecha:call.fecha, objecion:call.objecion||'', programa:call.programa||'',
+    cash_collected:call.cashCollected||0, contracted_revenue:call.contractedRevenue||0, notas:call.notas||'',
+    primera_cuota_pagada:call.primeraCuotaPagada!==false,
+    fee_perdido:!!call.feePerdido
+  },'?on_conflict=id');
+}
+
+async function deleteCall_sb(id){
+  await sbFetch('calls','DELETE',null,`?id=eq.${id}`);
+}
+
+async function loadHotLeads_sb(){
+  const data = await sbFetch('hot_leads','GET',null,'?order=created_at.asc');
+  if(!data) return [];
+  return data.map(h=>({
+    id:h.id, closer:h.closer||'', nombre:h.nombre, empresa:h.empresa||'', estado:h.estado,
+    ultimoContacto:h.ultimo_contacto||'', proximoFollowup:h.proximo_followup||'',
+    transcript:h.transcript||'', notas:h.notas||'', objecion:h.objecion||'',
+    analisisCall:h.analisis_call||'', puntuacion:h.puntuacion||null,
+    mensajes:h.mensajes||[]
+  }));
+}
+
+async function saveHotLead_sb(lead){
+  await sbFetch('hot_leads','POST',{
+    id:lead.id, closer:lead.closer||'', nombre:lead.nombre, empresa:lead.empresa||'', estado:lead.estado,
+    ultimo_contacto:lead.ultimoContacto||'', proximo_followup:lead.proximoFollowup||'',
+    transcript:lead.transcript||'', notas:lead.notas||'', objecion:lead.objecion||'',
+    analisis_call:lead.analisisCall||'', puntuacion:lead.puntuacion||null,
+    mensajes:lead.mensajes||[]
+  },'?on_conflict=id');
+}
+
+async function deleteHotLead_sb(id){
+  await sbFetch('hot_leads','DELETE',null,`?id=eq.${id}`);
+}
+
+async function loadCuotas_sb(){
+  const data = await sbFetch('cuotas','GET',null,'?order=fecha_estimada.asc');
+  if(!data) return [];
+  return data.map(c=>({
+    id:c.id, closer:c.closer||'', callId:c.call_id, nombreCliente:c.nombre_cliente, empresa:c.empresa||'',
+    numeroCuota:c.numero_cuota, totalCuotas:c.total_cuotas, monto:c.monto||0,
+    fechaEstimada:c.fecha_estimada, pagada:c.pagada||false, fechaPagada:c.fecha_pagada,
+    linkedCallId:c.linked_call_id||null
+  }));
+}
+
+async function saveCuota_sb(cuota){
+  await sbFetch('cuotas','POST',{
+    id:cuota.id, closer:cuota.closer||'', call_id:cuota.callId, nombre_cliente:cuota.nombreCliente, empresa:cuota.empresa||'',
+    numero_cuota:cuota.numeroCuota, total_cuotas:cuota.totalCuotas, monto:cuota.monto||0,
+    fecha_estimada:cuota.fechaEstimada, pagada:cuota.pagada||false, fecha_pagada:cuota.fechaPagada||null,
+    linked_call_id:cuota.linkedCallId||null
+  },'?on_conflict=id');
+}
+async function deleteCuota_sb(id){
+  await sbFetch('cuotas','DELETE',null,`?id=eq.${id}`);
+}
+
+// ===== STORAGE LOCAL (cache) =====
+const STORAGE_KEY='scd_v2';
+const HL_KEY='hotlist_leads';
+function loadState(){try{const s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch(e){}return{calls:[],leads:[],filter:'dia'};}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    const backupKey = 'scd_v2_backup_' + new Date().toISOString().slice(0,10);
+    localStorage.setItem(backupKey, JSON.stringify(state));
+    cleanOldBackups();
+    const el=document.getElementById('save-status');
+    if(el){el.textContent='Guardado '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});setTimeout(()=>el.textContent='Guardado automático ON',2000);}
+  }catch(e){}
+}
+function cleanOldBackups(){
+  try{
+    const keys = Object.keys(localStorage).filter(k=>k.startsWith('scd_v2_backup_'));
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-30);
+    keys.forEach(k=>{
+      const dateStr = k.replace('scd_v2_backup_','');
+      if(new Date(dateStr) < cutoff) localStorage.removeItem(k);
+    });
+  }catch(e){}
+}
+function listBackups(){
+  try{
+    return Object.keys(localStorage).filter(k=>k.startsWith('scd_v2_backup_')).sort().reverse();
+  }catch(e){return [];}
+}
+let state=loadState();
+let agenciaFilter='todas'; let mesOffset=0; let ingresosMesOffset=0;
+let closerFilter='todos'; let leadSearchQuery='';
+
+function setAgencia(ag, btn){
+  agenciaFilter=ag;
+  document.querySelectorAll('#ag-filter-todas,#ag-filter-dental').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateOverview();
+}
+
+function setCloser(cl, btn){
+  closerFilter=cl;
+  document.querySelectorAll('#cl-filter-todos,#cl-filter-manuela,#cl-filter-leandro,#cl-filter-ariel').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateOverview();
+  updatePerformance();
+  renderHotList();
+  renderCuotas();
+}
+
+function setLeadSearch(val){
+  leadSearchQuery=(val||'').toLowerCase().trim();
+  renderHotList();
+  renderCuotas();
+}
+
+// ===== HOT LIST STATE =====
+function loadHotList(){try{const h=localStorage.getItem(HL_KEY);return h?JSON.parse(h):[]}catch(e){return[];}}
+async function saveHotList(){
+  try{localStorage.setItem(HL_KEY,JSON.stringify(hotLeads));}catch(e){}
+}
+let hotLeads=loadHotList();
+
+// ===== CUOTAS STATE =====
+const CUOTAS_KEY='cuotas_cache';
+function loadCuotasLocal(){try{const c=localStorage.getItem(CUOTAS_KEY);return c?JSON.parse(c):[]}catch(e){return[];}}
+function saveCuotasLocal(){try{localStorage.setItem(CUOTAS_KEY,JSON.stringify(cuotas));}catch(e){}}
+let cuotas=loadCuotasLocal();
+let cuotasFilter='todas';
+
+function filterCuotas(f, btn){
+  cuotasFilter=f;
+  document.querySelectorAll('#tab-cuotas .hl-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCuotas();
+}
+
+function formatFechaUI(fechaStr){
+  if(!fechaStr) return '—';
+  let f = fechaStr.trim();
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(f)){
+    const [d,m,y]=f.split('/');
+    f=`${y}-${m}-${d}`;
+  }
+  const match = f.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!match) return fechaStr;
+  const [,y,m,d]=match;
+  return `${d}/${m}/${y}`;
+}
+
+function renderCuotas(){
+  const t=today();
+  let cuotasBase=cuotas;
+  if(closerFilter!=='todos') cuotasBase=cuotasBase.filter(c=>c.closer===closerFilter);
+  if(leadSearchQuery) cuotasBase=cuotasBase.filter(c=>(c.nombreCliente||'').toLowerCase().includes(leadSearchQuery));
+  const pendientes=cuotasBase.filter(c=>!c.pagada && c.fechaEstimada>=t);
+  const vencidas=cuotasBase.filter(c=>!c.pagada && c.fechaEstimada<t);
+  const cobradas=cuotasBase.filter(c=>c.pagada);
+  const montoPendiente=[...pendientes,...vencidas].reduce((s,c)=>s+(c.monto||0),0);
+
+  document.getElementById('cuotas-stat-pendientes').textContent=pendientes.length;
+  document.getElementById('cuotas-stat-cobradas').textContent=cobradas.length;
+  document.getElementById('cuotas-stat-vencidas').textContent=vencidas.length;
+  document.getElementById('cuotas-stat-monto').textContent='$'+montoPendiente.toLocaleString();
+
+  let lista=[...cuotasBase];
+  if(cuotasFilter==='pendientes') lista=pendientes;
+  else if(cuotasFilter==='vencidas') lista=vencidas;
+  else if(cuotasFilter==='cobradas') lista=cobradas;
+  lista.sort((a,b)=>b.fechaEstimada.localeCompare(a.fechaEstimada));
+
+  const tbody=document.getElementById('cuotas-table-body');
+  if(lista.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">Sin cuotas en este filtro</td></tr>';return;}
+  tbody.innerHTML=lista.map(c=>{
+    let estadoBadge;
+    if(c.pagada) estadoBadge='<span class="badge badge-cerrada">✅ Cobrada</span>';
+    else if(c.fechaEstimada<t) estadoBadge='<span class="badge badge-no-cerrada">⚠️ Vencida</span>';
+    else estadoBadge='<span class="badge badge-seguimiento">⏳ Pendiente</span>';
+    return `<tr>
+      <td style="font-weight:500">${c.nombreCliente}</td>
+      <td>${isInvictaCall(c)?INVICTA_LOGO_SVG+' Invicta':'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="font-family:'DM Mono';font-size:12px;color:var(--text2)">${c.numeroCuota}/${c.totalCuotas}</td>
+      <td style="font-family:'DM Mono';font-size:13px;color:var(--green)">$${(c.monto||0).toLocaleString()}</td>
+      <td style="font-family:'DM Mono';font-size:12px;color:var(--text2)">${formatFechaUI(c.fechaEstimada)}</td>
+      <td>${estadoBadge}</td>
+      <td style="display:flex;gap:6px;align-items:center;">${c.pagada?`<button class="btn btn-secondary btn-sm" onclick="marcarCuotaNoPagada(${c.id})">Deshacer</button>`:`<button class="btn btn-primary btn-sm" onclick="marcarCuotaPagada(${c.id})">✓ Marcar pagada</button>`}<button class="btn btn-secondary btn-sm" onclick="openEditCuota(${c.id})" title="Editar cuota">✏️</button><button class="btn btn-danger btn-sm" onclick="deleteCuota(${c.id})" title="Eliminar cuota">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function marcarCuotaPagada(id){
+  const cuota=cuotas.find(c=>c.id===id);if(!cuota)return;
+  cuota.pagada=true;
+  cuota.fechaPagada=today();
+  saveCuotasLocal();
+  // Esperar la sincronización con Supabase antes de re-renderizar
+  await saveCuota_sb(cuota).catch(e=>console.error('Supabase cuota sync:',e));
+  let dashCalls=state.calls;
+  const linkedCallId=Date.now()+Math.floor(Math.random()*1000);
+  dashCalls.push({
+    id: linkedCallId,
+    nombre: cuota.nombreCliente,
+    empresa: cuota.empresa,
+    estado: 'cuota-cobrada',
+    fecha: cuota.fechaPagada,
+    objecion: '',
+    cashCollected: cuota.monto,
+    contractedRevenue: 0,
+    programa: `Cuota ${cuota.numeroCuota}/${cuota.totalCuotas}`,
+    notas: `Empresa: ${cuota.empresa} | Cuota ${cuota.numeroCuota} de ${cuota.totalCuotas}`
+  });
+  cuota.linkedCallId=linkedCallId;
+  saveCuotasLocal();
+  await saveCuota_sb(cuota).catch(e=>console.error('Supabase cuota sync:',e));
+  saveState();
+  renderCuotas();
+  updateOverview();
+}
+
+async function marcarCuotaNoPagada(id){
+  const cuota=cuotas.find(c=>c.id===id);if(!cuota)return;
+  cuota.pagada=false;
+  cuota.fechaPagada=null;
+  if(cuota.linkedCallId){
+    state.calls=state.calls.filter(c=>c.id!==cuota.linkedCallId);
+    saveState();
+    deleteCall_sb(cuota.linkedCallId).catch(e=>console.error('Supabase delete error:',e));
+    cuota.linkedCallId=null;
+  }
+  saveCuotasLocal();
+  await saveCuota_sb(cuota).catch(e=>console.error('Supabase cuota sync:',e));
+  renderCuotas();
+  updateOverview();
+}
+
+async function deleteCuota(id){
+  const cuota=cuotas.find(c=>c.id===id);if(!cuota)return;
+  const msg=cuota.pagada
+    ? `Esta cuota ya está marcada como pagada (afecta tu cobro del mes). ¿Eliminarla igual? Esto también va a borrar el registro de cash asociado.`
+    : `¿Eliminar esta cuota de ${cuota.nombreCliente}?`;
+  if(!confirm(msg))return;
+  if(cuota.linkedCallId){
+    state.calls=state.calls.filter(c=>c.id!==cuota.linkedCallId);
+    saveState();
+    deleteCall_sb(cuota.linkedCallId).catch(e=>console.error('Supabase delete error:',e));
+  }
+  cuotas=cuotas.filter(c=>c.id!==id);
+  saveCuotasLocal();
+  deleteCuota_sb(id).catch(e=>console.error('Supabase cuota delete error:',e));
+  renderCuotas();
+  updateOverview();
+}
+
+// ===================== EDITAR / DIVIDIR CUOTAS =====================
+let _editingCuotaId=null;
+
+function openEditCuota(id){
+  const cuota=cuotas.find(c=>c.id===id);if(!cuota)return;
+  _editingCuotaId=id;
+  document.getElementById('edit-cuota-content').innerHTML=`
+    <div style="margin-bottom:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:13px;">
+      <strong>${cuota.nombreCliente}</strong><span style="color:var(--text2);margin-left:8px;">Cuota ${cuota.numeroCuota}/${cuota.totalCuotas} · $${(cuota.monto||0).toLocaleString()}</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      <button id="ecTab-simple" class="btn btn-primary btn-sm" onclick="switchECTab('simple')">✏️ Editar</button>
+      <button id="ecTab-split" class="btn btn-secondary btn-sm" onclick="switchECTab('split')">✂️ Dividir en cuotas</button>
+    </div>
+    <div id="ec-panel-simple">
+      <div style="margin-bottom:14px;">
+        <label class="input-label">Monto ($)</label>
+        <input id="ec-monto" type="number" class="input" value="${cuota.monto||0}" />
+      </div>
+      <div style="margin-bottom:20px;">
+        <label class="input-label">Fecha estimada de cobro</label>
+        <input id="ec-fecha" type="date" class="input" value="${cuota.fechaEstimada}" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-edit-cuota')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditCuota()">💾 Guardar cambios</button>
+      </div>
+    </div>
+    <div id="ec-panel-split" style="display:none;">
+      <div style="margin-bottom:14px;">
+        <label class="input-label">¿En cuántas cuotas dividir?</label>
+        <select id="ec-split-n" onchange="updateSplitFields()" class="input">
+          <option value="2">2 cuotas</option>
+          <option value="3">3 cuotas</option>
+          <option value="4">4 cuotas</option>
+          <option value="5">5 cuotas</option>
+        </select>
+      </div>
+      <div id="ec-split-fields" style="margin-bottom:16px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-edit-cuota')">Cancelar</button>
+        <button class="btn btn-primary" onclick="executeSplitCuota()">✂️ Dividir cuota</button>
+      </div>
+    </div>
+  `;
+  updateSplitFields();
+  openModal('modal-edit-cuota');
+}
+
+function switchECTab(tab){
+  document.getElementById('ec-panel-simple').style.display=tab==='simple'?'':'none';
+  document.getElementById('ec-panel-split').style.display=tab==='split'?'':'none';
+  document.getElementById('ecTab-simple').className='btn btn-sm '+(tab==='simple'?'btn-primary':'btn-secondary');
+  document.getElementById('ecTab-split').className='btn btn-sm '+(tab==='split'?'btn-primary':'btn-secondary');
+}
+
+function updateSplitFields(){
+  const cuota=cuotas.find(c=>c.id===_editingCuotaId);if(!cuota)return;
+  const n=parseInt(document.getElementById('ec-split-n').value)||2;
+  const montoBase=Math.floor((cuota.monto||0)/n);
+  const resto=(cuota.monto||0)-montoBase*n;
+  let html='';
+  for(let i=0;i<n;i++){
+    const monto=i===0?montoBase+resto:montoBase;
+    const d=new Date(cuota.fechaEstimada+'T12:00:00');
+    d.setMonth(d.getMonth()+i);
+    const fecha=d.toISOString().slice(0,10);
+    html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;">Cuota ${i+1} de ${n}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label class="input-label" style="margin-bottom:4px;">Monto ($)</label><input id="split-monto-${i}" type="number" value="${monto}" class="input" /></div>
+        <div><label class="input-label" style="margin-bottom:4px;">Fecha</label><input id="split-fecha-${i}" type="date" value="${fecha}" class="input" /></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('ec-split-fields').innerHTML=html;
+}
+
+async function saveEditCuota(){
+  const cuota=cuotas.find(c=>c.id===_editingCuotaId);if(!cuota)return;
+  const nuevoMonto=parseFloat(document.getElementById('ec-monto').value)||0;
+  const nuevaFecha=document.getElementById('ec-fecha').value;
+  if(!nuevaFecha){alert('La fecha es requerida');return;}
+  cuota.monto=nuevoMonto;
+  cuota.fechaEstimada=nuevaFecha;
+  saveCuotasLocal();
+  await saveCuota_sb(cuota).catch(e=>console.error('Supabase cuota sync:',e));
+  closeModal('modal-edit-cuota');
+  renderCuotas();
+}
+
+async function executeSplitCuota(){
+  const cuotaOriginal=cuotas.find(c=>c.id===_editingCuotaId);if(!cuotaOriginal)return;
+  const n=parseInt(document.getElementById('ec-split-n').value)||2;
+  const nuevasCuotas=[];
+  for(let i=0;i<n;i++){
+    const monto=parseFloat(document.getElementById('split-monto-'+i).value)||0;
+    const fecha=document.getElementById('split-fecha-'+i).value;
+    if(!fecha){alert('Completá la fecha de la cuota '+(i+1));return;}
+    nuevasCuotas.push({
+      id:Date.now()+i*7+Math.floor(Math.random()*999),
+      callId:cuotaOriginal.callId,
+      nombreCliente:cuotaOriginal.nombreCliente,
+      empresa:cuotaOriginal.empresa,
+      numeroCuota:i+1,
+      totalCuotas:n,
+      monto,
+      fechaEstimada:fecha,
+      pagada:false,
+      fechaPagada:null
+    });
+  }
+  await sbFetch('cuotas','DELETE',null,'?id=eq.'+cuotaOriginal.id).catch(e=>console.error('Delete cuota:',e));
+  cuotas=cuotas.filter(c=>c.id!==_editingCuotaId);
+  for(const nc of nuevasCuotas){
+    cuotas.push(nc);
+    await saveCuota_sb(nc).catch(e=>console.error('Save split cuota:',e));
+  }
+  saveCuotasLocal();
+  closeModal('modal-edit-cuota');
+  renderCuotas();
+}
+// ===================== FIN EDITAR / DIVIDIR =====================
+
+let hlFilter='todos';
+let objFilter='semana';
+let objMesOffset=0;
+
+function setObjFilter(f,btn){
+  objFilter=f;
+  document.querySelectorAll('#obj-filter-semana,#obj-filter-mes,#obj-filter-todo').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const nav=document.getElementById('obj-mes-nav-container');
+  if(nav) nav.style.display=(f==='mes')?'flex':'none';
+  if(f==='mes'){
+    objMesOffset=0;
+    const lbl=document.getElementById('obj-mes-label');if(lbl)lbl.textContent=getObjMesLabel();
+    const nb=document.getElementById('obj-mes-nav-next');if(nb){nb.disabled=true;nb.style.opacity='0.3';nb.style.color='var(--text3)';}
+  }
+  updateOverview();
+}
+function getObjMonthRange(){
+  const now=new Date();
+  return{start:new Date(now.getFullYear(),now.getMonth()+objMesOffset,1).toISOString().slice(0,10),end:new Date(now.getFullYear(),now.getMonth()+objMesOffset+1,0).toISOString().slice(0,10)};
+}
+function getObjMesLabel(){const now=new Date();const d=new Date(now.getFullYear(),now.getMonth()+objMesOffset,1);return d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});}
+function navObjMes(dir){
+  objMesOffset+=dir;
+  if(objMesOffset>0)objMesOffset=0;
+  const lbl=document.getElementById('obj-mes-label');if(lbl)lbl.textContent=getObjMesLabel();
+  const nb=document.getElementById('obj-mes-nav-next');
+  if(nb){nb.disabled=objMesOffset===0;nb.style.opacity=objMesOffset===0?'0.3':'1';nb.style.color=objMesOffset===0?'var(--text3)':'var(--text2)';}
+  updateOverview();
+}
+
+// ===== API KEY =====
+function getApiKey(){return localStorage.getItem('openai_api_key')||'';}
+function saveApiKey(){
+  const k=document.getElementById('settings-api-key').value.trim();
+  if(!k){alert('Ingresá tu API key');return;}
+  localStorage.setItem('openai_api_key',k);
+  closeModal('modal-settings');
+  renderApiKeyStatus();
+  alert('✅ API key guardada correctamente');
+}
+function renderApiKeyStatus(){
+  const k=getApiKey();
+  const statusEl=document.getElementById('settings-key-status');
+  if(statusEl){
+    if(k)statusEl.innerHTML=`<span class="api-key-indicator ok">✓ Key guardada (${k.slice(0,8)}...)</span>`;
+    else statusEl.innerHTML=`<span class="api-key-indicator missing">✗ No configurada</span>`;
+  }
+}
+function openSettingsModal(){const k=getApiKey();if(k)document.getElementById('settings-api-key').value=k;renderApiKeyStatus();openModal('modal-settings');}
+
+// ===== NAV =====
+const tabTitles={overview:'Dashboard',leads:'Sales Tracker',hotlist:'Hot List',cuotas:'Cuotas',performance:'Performance'};
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('pageTitle').textContent=tabTitles[tab]||tab;
+  event.currentTarget.classList.add('active');
+  if(tab==='performance'){renderMetasProgress();updatePerformance();}
+  if(tab==='hotlist'){renderHotList();}
+  if(tab==='cuotas'){renderCuotas();}
+}
+
+// ===== DATES =====
+function today(){return new Date().toISOString().slice(0,10);}
+// Una call marcada "cerrada" solo cuenta como cierre real para la tasa de cierre
+// una vez que se pagó al menos la primera cuota. Antes de eso (solo pagó el fee)
+// cuenta como intento (denominador) pero no como cierre (numerador).
+// Nota: calls históricas cerradas ANTES de que existiera este campo no tienen
+// primeraCuotaPagada definido — para no romper el historial, undefined se trata
+// como cierre real (true). Solo cuenta como "pendiente" cuando quedó explícitamente
+// en false (es decir, alguien tildó/destildó el checkbox a propósito).
+// Logo de Invicta (ex "SA Dental") — ícono inline chico para usar en badges/botones
+const INVICTA_LOGO_SVG='<svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:2px;" xmlns="http://www.w3.org/2000/svg"><path d="M4 21V13M8.5 21V9M13 21V4.5L15.5 7M18 21V10.5" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// "Invicta" es el nuevo nombre de la agencia que antes se llamaba "SA Dental".
+// Mantenemos el matching de datos viejos (empresa/notas con "SA Dental") para no perder el historial.
+function isInvictaCall(c){return c.empresa==='Invicta'||c.empresa==='SA Dental'||(c.notas&&(c.notas.includes('Invicta')||c.notas.includes('SA Dental')));}
+function isCierreReal(c){return c.estado==='cerrada' && c.primeraCuotaPagada!==false;}
+function isCerradaPendienteCuota(c){return c.estado==='cerrada' && c.primeraCuotaPagada===false;}
+function marcarFeePerdido(id){
+  const c=state.calls.find(x=>x.id===id);if(!c)return;
+  if(!confirm(`¿Marcar el fee de ${c.nombre} como perdido? Esto lo mueve a "No cerrada" (dejó de pagar antes de la 1ra cuota), pero el monto cobrado del fee se mantiene registrado en tu cobro del mes.`))return;
+  c.estado='no-cerrada';
+  c.feePerdido=true;
+  saveState();
+  updateOverview();
+  saveCall_sb(c).catch(e=>console.error('Supabase sync error:',e));
+}
+function getWeekRange(offset=0){
+  const now=new Date();now.setDate(now.getDate()+offset*7);
+  const day=now.getDay(),diff=now.getDate()-day+(day===0?-6:1);
+  const mon=new Date(now.setDate(diff));
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  return{start:mon.toISOString().slice(0,10),end:sun.toISOString().slice(0,10)};
+}
+function getMonthRange(){
+  const now=new Date();
+  return{start:new Date(now.getFullYear(),now.getMonth()+mesOffset,1).toISOString().slice(0,10),end:new Date(now.getFullYear(),now.getMonth()+mesOffset+1,0).toISOString().slice(0,10)};
+}
+function getMesLabel(){const now=new Date();const d=new Date(now.getFullYear(),now.getMonth()+mesOffset,1);return d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});}
+function navMes(dir){
+  mesOffset+=dir;
+  if(mesOffset>0)mesOffset=0;
+  const mn=document.getElementById('mes-nav');
+  const nb=document.getElementById('mes-nav-next');
+  if(mn)mn.textContent=getMesLabel();
+  if(nb){nb.disabled=mesOffset===0;nb.style.opacity=mesOffset===0?'0.3':'1';}
+  updateOverview();renderCuotas();renderHotList();
+}
+function getIngresosMonthRange(){
+  const now=new Date();
+  return{start:new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset,1).toISOString().slice(0,10),end:new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset+1,0).toISOString().slice(0,10)};
+}
+function getIngresosMesLabel(){const now=new Date();const d=new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset,1);return d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});}
+function navIngresosMes(dir){
+  ingresosMesOffset+=dir;
+  if(ingresosMesOffset>0)ingresosMesOffset=0;
+  const nb=document.getElementById('ingresos-mes-next');
+  if(nb){nb.disabled=ingresosMesOffset===0;nb.style.opacity=ingresosMesOffset===0?'0.3':'1';nb.style.color=ingresosMesOffset===0?'var(--text3)':'var(--text2)';}
+  updateIngresosBar();
+}
+function filterCallsByPeriod(){
+  const t=today(),w=getWeekRange(),m=getMonthRange();
+  if(state.filter==='dia') return state.calls.filter(c=>c.fecha===t);
+  if(state.filter==='semana') return state.calls.filter(c=>c.fecha>=w.start&&c.fecha<=w.end);
+  if(state.filter==='mes') return state.calls.filter(c=>c.fecha>=m.start&&c.fecha<=m.end);
+  return state.calls;
+}
+
+function filterCalls(){
+  const t=today(),w=getWeekRange(),m=getMonthRange();
+  let calls=state.calls;
+  if(state.filter==='dia') calls=calls.filter(c=>c.fecha===t);
+  else if(state.filter==='semana') calls=calls.filter(c=>c.fecha>=w.start&&c.fecha<=w.end);
+  else if(state.filter==='mes') calls=calls.filter(c=>c.fecha>=m.start&&c.fecha<=m.end);
+  if(agenciaFilter!=='todas') calls=calls.filter(c=>c.empresa===agenciaFilter||(c.notas&&c.notas.includes(agenciaFilter)));
+  if(closerFilter!=='todos') calls=calls.filter(c=>c.closer===closerFilter);
+  return calls;
+}
+
+function setPuntuacion(id, val) {
+  const lead=hotLeads.find(l=>l.id===id);if(!lead)return;
+  lead.puntuacion=val;
+  if(val>=8) lead.estado='hot';
+  else if(val>=4) lead.estado='tibio';
+  else lead.estado='frio';
+  saveHotList();
+  saveHotLead_sb(lead).catch(e=>console.error('Supabase punt sync:',e));
+  renderHotList();
+}
+
+function setFilter(f,btn){
+  if(f!=='mes')mesOffset=0;
+  const mnc=document.getElementById('mes-nav-container');
+  if(mnc)mnc.style.display=f==='mes'?'flex':'none';
+  if(f==='mes'){const mn=document.getElementById('mes-nav');if(mn)mn.textContent=getMesLabel();}
+  const nb=document.getElementById('mes-nav-next');
+  if(nb){nb.disabled=true;nb.style.opacity='0.3';}
+  state.filter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateOverview();
+  updatePerformance();
+  renderMetasProgress();
+}
+function estadoLabel(e){return{cerrada:'✅ Cerrada','no-cerrada':'❌ No cerrada',seguimiento:'🔄 Seguimiento',agendada:'📅 Re-agendada','no-califica':'🚫 No calificaba','no-pitcheo':'⏸️ No se pitcheó','cuota-cobrada':'💳 Cuota cobrada'}[e]||e;}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ===== CALCULADORA INVERSA =====
+function updateCalculadora(){
+  const meta=parseFloat(document.getElementById('calc-meta-ingresos')?.value)||0;
+  const ticket=parseFloat(document.getElementById('calc-ticket')?.value)||3000;
+  const tasa=parseFloat(document.getElementById('calc-tasa')?.value)||28;
+  const comision=parseFloat(document.getElementById('calc-comision')?.value)||10;
+  const el=document.getElementById('calculadora-result');
+  if(!el)return;
+  if(!meta||!ticket||!tasa){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;">Completá los campos para ver el cálculo</div>';
+    return;
+  }
+  const ingresoPorCierre=ticket*(comision/100);
+  const cierresNecesarios=Math.ceil(meta/ingresoPorCierre);
+  const callsNecesarias=Math.ceil(cierresNecesarios/(tasa/100));
+  const callsPorDia=Math.ceil(callsNecesarias/22);
+  const callsPorSemana=Math.ceil(callsNecesarias/4);
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div style="text-align:center;padding:12px;background:var(--surface3);border-radius:8px;border:1px solid var(--border2);">
+        <div style="font-size:28px;font-weight:800;font-family:'DM Mono';color:var(--accent2);">${cierresNecesarios}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">cierres necesarios</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--surface3);border-radius:8px;border:1px solid var(--border2);">
+        <div style="font-size:28px;font-weight:800;font-family:'DM Mono';color:var(--yellow);">${callsNecesarias}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">calls totales</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;text-align:center;padding:8px;background:var(--surface3);border-radius:6px;">
+        <div style="font-size:16px;font-weight:700;font-family:'DM Mono';color:var(--text);">${callsPorSemana}</div>
+        <div style="font-size:10px;color:var(--text3);">calls/semana</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:8px;background:var(--surface3);border-radius:6px;">
+        <div style="font-size:16px;font-weight:700;font-family:'DM Mono';color:var(--text);">${callsPorDia}</div>
+        <div style="font-size:10px;color:var(--text3);">calls/día</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:8px;background:var(--surface3);border-radius:6px;">
+        <div style="font-size:16px;font-weight:700;font-family:'DM Mono';color:var(--green);">$${ingresoPorCierre.toLocaleString()}</div>
+        <div style="font-size:10px;color:var(--text3);">por cierre</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px;text-align:center;">Con ticket $${ticket.toLocaleString()} · ${tasa}% cierre · ${comision}% comisión</div>
+  `;
+  try{localStorage.setItem('calc_config',JSON.stringify({meta,ticket,tasa,comision}));}catch(e){}
+  updateIngresosBar();
+}
+
+function loadCalcConfig(){
+  try{const c=localStorage.getItem('calc_config');if(c){const d=JSON.parse(c);
+    if(d.meta)document.getElementById('calc-meta-ingresos').value=d.meta;
+    if(d.ticket)document.getElementById('calc-ticket').value=d.ticket;
+    if(d.tasa)document.getElementById('calc-tasa').value=d.tasa;
+    if(d.comision)document.getElementById('calc-comision').value=d.comision;
+    const elInv=document.getElementById('comision-invicta-pct');if(elInv)elInv.value=d.comisionInvicta||10;
+  }}catch(e){}
+  updateCalculadora();
+}
+
+function saveComisionConfig(){
+  try{
+    const c=localStorage.getItem('calc_config');
+    const config=c?JSON.parse(c):{};
+    config.comisionInvicta=parseFloat(document.getElementById('comision-invicta-pct').value)||10;
+    localStorage.setItem('calc_config',JSON.stringify(config));
+  }catch(e){}
+  updateIngresosBar();
+}
+
+function updateIngresosBar(){
+  try{
+    const c=localStorage.getItem('calc_config');
+    const config=c?JSON.parse(c):{meta:0,ticket:3000,tasa:28,comision:10};
+    const m=getIngresosMonthRange();
+    const callsMesCerradas=state.calls.filter(c2=>c2.fecha>=m.start&&c2.fecha<=m.end&&(c2.estado==='cerrada'||c2.estado==='cuota-cobrada'));
+    const comInvicta=config.comisionInvicta||10;
+    let comSA=0;
+    callsMesCerradas.forEach(c2=>{
+      const cash=c2.cashCollected||0;
+      comSA+=cash*(comInvicta/100);
+    });
+    const totalIngresos=comSA;
+    const meta=config.meta||0;
+    const pct=meta>0?Math.min(Math.round((totalIngresos/meta)*100),100):0;
+    const falta=Math.max(0,meta-totalIngresos);
+    const mesLabel=getIngresosMesLabel();
+    const elMes=document.getElementById('ingresos-mes-label');if(elMes)elMes.textContent=mesLabel;
+    const elAct=document.getElementById('ingresos-actuales');if(elAct)elAct.textContent='$'+totalIngresos.toLocaleString();
+    const elMeta=document.getElementById('ingresos-meta-label');if(elMeta)elMeta.textContent=meta>0?'$'+meta.toLocaleString():'sin meta';
+    const elBar=document.getElementById('ingresos-bar');
+    if(elBar){
+      elBar.style.width=pct+'%';
+      elBar.style.background=pct>=100?'var(--green)':pct>=60?'linear-gradient(90deg,var(--yellow),#fbbf24)':'linear-gradient(90deg,var(--accent),#60a5fa)';
+    }
+    const elPct=document.getElementById('ingresos-pct');if(elPct)elPct.textContent=pct+'% completado';
+    const elFalta=document.getElementById('ingresos-falta');if(elFalta)elFalta.textContent=meta>0&&falta>0?'$'+falta.toLocaleString()+' para la meta':'';
+    const elSA=document.getElementById('comision-sa');if(elSA)elSA.textContent='$'+Math.round(comSA).toLocaleString();
+  }catch(e){}
+}
+
+// ===== OVERVIEW =====
+function updateOverview(){
+  const calls=filterCalls(),total=calls.length;
+  const noCalifica=calls.filter(c=>c.estado==='no-califica').length;
+  const noPitcheo=calls.filter(c=>c.estado==='no-pitcheo').length;
+  const cerradas=calls.filter(isCierreReal).length;
+  const seguimiento=calls.filter(c=>c.estado==='seguimiento'||c.estado==='agendada').length;
+  const noCerradas=calls.filter(c=>c.estado==='no-cerrada').length;
+  const pendienteCuota=calls.filter(isCerradaPendienteCuota).length;
+  const denominador=cerradas+noCerradas+seguimiento+pendienteCuota;
+  const rate=denominador>0?Math.round((cerradas/denominador)*100):0;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-cerradas').textContent=cerradas;
+  document.getElementById('stat-seguimiento').textContent=seguimiento;
+  document.getElementById('stat-rate').textContent=rate+'% tasa de cierre';
+  const ncEl=document.getElementById('stat-no-califica');
+  if(ncEl) ncEl.textContent=noCalifica;
+  const npEl=document.getElementById('stat-no-pitcheo');
+  if(npEl) npEl.textContent=noPitcheo;
+  const feePendEl=document.getElementById('stat-fee-pendiente');
+  if(feePendEl) feePendEl.textContent=pendienteCuota;
+  const feePerdidos=calls.filter(c=>c.feePerdido);
+  const feePerdEl=document.getElementById('stat-fee-perdido');
+  if(feePerdEl) feePerdEl.textContent=feePerdidos.length;
+  const feePerdMontoEl=document.getElementById('stat-fee-perdido-monto');
+  if(feePerdMontoEl){
+    const montoPerdido=feePerdidos.reduce((s,c)=>s+(c.cashCollected||0),0);
+    feePerdMontoEl.textContent='$'+montoPerdido.toLocaleString()+' cobrados igual';
+  }
+
+  document.getElementById('tasa-total').textContent=rate+'%';
+  document.getElementById('tasa-total-sub').textContent=cerradas+' cerradas / '+denominador+' calls válidas';
+  document.getElementById('tasa-total-bar').style.width=rate+'%';
+
+  function calcTasaEmpresa(empresa) {
+    const callsEmp = empresa==='SA Dental'
+      ? filterCallsByPeriod().filter(isInvictaCall)
+      : filterCallsByPeriod().filter(c => c.empresa===empresa || (c.notas&&c.notas.includes(empresa)));
+    const cerr = callsEmp.filter(isCierreReal).length;
+    const noCerr = callsEmp.filter(c=>c.estado==='no-cerrada').length;
+    const seg = callsEmp.filter(c=>c.estado==='seguimiento'||c.estado==='agendada').length;
+    const pendCuota = callsEmp.filter(isCerradaPendienteCuota).length;
+    const den = cerr+noCerr+seg+pendCuota;
+    return { tasa: den>0?Math.round((cerr/den)*100):0, cerradas:cerr, total:den };
+  }
+
+
+  let callsObjBase=closerFilter==='todos'?state.calls:state.calls.filter(c=>c.closer===closerFilter);
+  let callsObj=callsObjBase;
+  if(objFilter==='semana'){const w=getWeekRange();callsObj=callsObjBase.filter(c=>c.fecha>=w.start&&c.fecha<=w.end);}
+  else if(objFilter==='mes'){const mObj=getObjMonthRange();callsObj=callsObjBase.filter(c=>c.fecha>=mObj.start&&c.fecha<=mObj.end);}
+
+  function categorizarObjecion(texto){
+    const t=(texto||'').toLowerCase();
+    if(t.includes('bomba de humo')) return 'Bomba de Humo';
+    if(t.includes('miedo')) return 'Miedo';
+    if(t.includes('dinero')) return 'Dinero';
+    if(t.includes('logística')||t.includes('logistica')) return 'Logística';
+    return null;
+  }
+
+  const objMap={};
+  callsObj.filter(c=>c.objecion).forEach(c=>{
+    const cat=categorizarObjecion(c.objecion);
+    if(cat) objMap[cat]=(objMap[cat]||0)+1;
+  });
+  const catOrder=['Bomba de Humo','Dinero','Logística','Miedo'];
+  const catColors={'Bomba de Humo':'#94a3b8','Dinero':'#10b981','Logística':'#f59e0b','Miedo':'#f43f5e'};
+  const catIcons={'Bomba de Humo':'🌫️','Dinero':'💰','Logística':'🚚','Miedo':'😰'};
+  const sorted=catOrder.filter(c=>objMap[c]).map(c=>[c,objMap[c]]).sort((a,b)=>b[1]-a[1]);
+  const objEl=document.getElementById('objection-list');
+
+  if(sorted.length===0){
+    objEl.innerHTML='<div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-text">Sin objeciones en este período</div></div>';
+    drawObjChart([]);
+  } else {
+    objEl.innerHTML=sorted.map(([t,n])=>`
+      <div class="objection-item">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${catColors[t]};flex-shrink:0;"></div>
+          <div style="font-size:13px">${catIcons[t]} ${t}</div>
+        </div>
+        <div class="objection-count">${n}x</div>
+      </div>`).join('');
+    drawObjChart(sorted.map(([t,n])=>({label:t,value:n,color:catColors[t]})));
+  }
+
+  const tbody=document.getElementById('calls-table-body');
+  if(calls.length===0){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">Sin calls en este período</td></tr>';return;}
+  const mesesNombres={'01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio','07':'Julio','08':'Agosto','09':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'};
+  function renderCallRow(c){return `<tr>
+    <td style="font-family:'DM Mono';font-size:12px;color:var(--text2)">${c.fecha}</td>
+    <td style="font-weight:500">${c.nombre}</td>
+    <td>${isInvictaCall(c)?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(56,189,248,.12);color:#38bdf8;font-weight:600;">'+INVICTA_LOGO_SVG+' Invicta</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
+    <td><span class="badge badge-${c.estado}">${c.feePerdido?'💸 Fee perdido (no pagó cuota)':(c.estado==='cerrada'&&!c.primeraCuotaPagada?'⏳ Fee pagado (sin 1ra cuota)':estadoLabel(c.estado))}</span></td>
+    <td style="color:var(--text2);font-size:12px">${c.objecion||'—'}</td>
+    <td style="color:var(--text2);font-size:12px">${c.programa||'—'}</td>
+    <td style="font-family:'DM Mono';font-size:12px;color:var(--green)">${c.cashCollected?'$'+c.cashCollected.toLocaleString():'—'}</td>
+    <td style="white-space:nowrap">${isCerradaPendienteCuota(c)?`<button class="btn btn-danger btn-sm" style="margin-right:4px" onclick="marcarFeePerdido(${c.id})" title="Marcar fee como perdido (no pagó la cuota)">💸 Perdido</button>`:''}<button class="btn btn-edit btn-sm" style="margin-right:4px" onclick="openEditCall(${c.id})">✏️</button><button class="btn btn-danger btn-sm" onclick="deleteCall(${c.id})">✕</button></td>
+  </tr>`;}
+  if(state.filter==='todo'){
+    const sorted=[...calls].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    const byMonth={};
+    sorted.forEach(c=>{const mes=c.fecha.slice(0,7);if(!byMonth[mes])byMonth[mes]=[];byMonth[mes].push(c);});
+    tbody.innerHTML=Object.entries(byMonth).map(([mes,mCalls])=>{
+      const[year,month]=mes.split('-');
+      const cerr=mCalls.filter(isCierreReal).length;
+      const noCerr=mCalls.filter(c=>c.estado==='no-cerrada').length;
+      const seg=mCalls.filter(c=>c.estado==='seguimiento'||c.estado==='agendada').length;
+      const pendCuota=mCalls.filter(isCerradaPendienteCuota).length;
+      const den=cerr+noCerr+seg+pendCuota;
+      const tasa=den>0?Math.round((cerr/den)*100):0;
+      const objMap={};
+      mCalls.filter(c=>c.objecion).forEach(c=>{
+        const t=(c.objecion||'').toLowerCase();
+        let cat='Otra';
+        if(t.includes('bomba'))cat='🌫️ Bomba';
+        else if(t.includes('miedo'))cat='😰 Miedo';
+        else if(t.includes('dinero'))cat='💰 Dinero';
+        else if(t.includes('logíst')||t.includes('logist'))cat='🚚 Logística';
+        objMap[cat]=(objMap[cat]||0)+1;
+      });
+      const objStr=Object.entries(objMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k} ${v}x`).join(' · ')||'—';
+      return `<tr style="background:var(--surface2);border-top:2px solid var(--border2);">
+        <td colspan="8" style="padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div style="font-weight:700;font-size:13px;color:var(--text);">${mesesNombres[month]||month} ${year}</div>
+            <div style="display:flex;gap:16px;font-size:11px;flex-wrap:wrap;">
+              <span style="color:var(--green);font-weight:600;">${cerr} cerradas</span>
+              <span style="color:var(--text2);">${mCalls.length} calls</span>
+              <span style="color:var(--accent2);font-weight:600;">${tasa}% tasa</span>
+              <span style="color:var(--text3);">${objStr}</span>
+            </div>
+          </div>
+        </td>
+      </tr>${mCalls.map(renderCallRow).join('')}`;
+    }).join('');
+  } else {
+    tbody.innerHTML=[...calls].sort((a,b)=>b.fecha.localeCompare(a.fecha)).map(renderCallRow).join('');
+  }
+}
+
+function drawObjChart(data) {
+  const canvas = document.getElementById('objections-chart');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,180,180);
+  if(!data.length) {
+    ctx.beginPath();ctx.arc(90,90,70,0,Math.PI*2);
+    ctx.strokeStyle='var(--border2,#243444)';ctx.lineWidth=20;ctx.stroke();
+    return;
+  }
+  const total=data.reduce((s,d)=>s+d.value,0);
+  let start=-Math.PI/2;
+  data.forEach(d=>{
+    const slice=(d.value/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(90,90);
+    ctx.arc(90,90,70,start,start+slice);
+    ctx.closePath();ctx.fillStyle=d.color;ctx.fill();
+    start+=slice;
+  });
+  ctx.beginPath();ctx.arc(90,90,45,0,Math.PI*2);
+  ctx.fillStyle='#0d1520';ctx.fill();
+  ctx.fillStyle='#e2eaf4';ctx.font='bold 18px DM Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(total,90,86);
+  ctx.font='10px Inter,sans-serif';ctx.fillStyle='#6b8094';
+  ctx.fillText('total',90,104);
+}
+
+// ===== ADD/EDIT CALL =====
+const modalObjBombaLabels={'pensarlo':'Tengo que pensarlo','socio-pareja':'Pareja / Socio','dias':'Lo pienso en unos días','mail':'Mandámelo por mail','numeros':'Revisar números','tarjeta':'Se llevó la tarjeta','otra':'Otra bomba de humo'};
+const modalMiedoLabels={'yo':'Yo','tu':'Tú','mañana':'Mañana','ayer':'Ayer'};
+let modalObjState={categoria:null, miedoTags:[], miedoCombo:[]};
+
+function modalResetObjUI(){
+  modalObjState={categoria:null, miedoTags:[], miedoCombo:[]};
+  document.querySelectorAll('#modal-obj-cat-buttons .filter-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('modal-obj-sub-bomba').classList.add('hidden');
+  document.getElementById('modal-obj-sub-miedo').classList.add('hidden');
+  document.querySelectorAll('#modal-obj-sub-miedo .filter-btn').forEach(b=>b.classList.remove('active-miedo','active'));
+  document.getElementById('modal-obj-bomba-select').value='pensarlo';
+  document.getElementById('call-objecion').value='';
+}
+
+function modalSelectObjCat(cat){
+  modalObjState.categoria=cat;
+  modalObjState.miedoTags=[];
+  modalObjState.miedoCombo=[];
+  document.querySelectorAll('#modal-obj-cat-buttons .filter-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('modal-obj-'+cat).classList.add('active');
+  document.getElementById('modal-obj-sub-bomba').classList.toggle('hidden', cat!=='bomba');
+  document.getElementById('modal-obj-sub-miedo').classList.toggle('hidden', cat!=='miedo');
+  document.querySelectorAll('#modal-obj-sub-miedo .filter-btn').forEach(b=>b.classList.remove('active-miedo','active'));
+  modalUpdateObjValue();
+}
+
+function modalToggleMiedo(tag){
+  const idx=modalObjState.miedoTags.indexOf(tag);
+  const btn=document.getElementById('modal-miedo-'+tag);
+  if(idx>-1){modalObjState.miedoTags.splice(idx,1);btn.classList.remove('active-miedo');}
+  else{modalObjState.miedoTags.push(tag);btn.classList.add('active-miedo');}
+  modalUpdateObjValue();
+}
+
+function modalToggleMiedoCombo(combo){
+  const idx=modalObjState.miedoCombo.indexOf(combo);
+  const btn=document.getElementById('modal-miedo-combo-'+combo);
+  if(idx>-1){modalObjState.miedoCombo.splice(idx,1);btn.classList.remove('active');}
+  else{modalObjState.miedoCombo.push(combo);btn.classList.add('active');}
+  modalUpdateObjValue();
+}
+
+function modalUpdateObjValue(){
+  let val='';
+  if(modalObjState.categoria==='bomba'){
+    const sub=document.getElementById('modal-obj-bomba-select').value;
+    val='🌫️ Bomba de Humo: '+(modalObjBombaLabels[sub]||sub);
+  } else if(modalObjState.categoria==='miedo'){
+    const tags=modalObjState.miedoTags.map(t=>modalMiedoLabels[t]).join(', ');
+    const combos=modalObjState.miedoCombo.length?' + '+modalObjState.miedoCombo.map(c=>c==='dinero'?'Dinero':'Logística').join(' + '):'';
+    val=tags?'😰 Miedo ('+tags+')'+combos:'';
+  } else if(modalObjState.categoria==='dinero'){
+    val='💰 Dinero';
+  } else if(modalObjState.categoria==='logistica'){
+    val='🚚 Logística';
+  }
+  document.getElementById('call-objecion').value=val;
+}
+
+function modalLoadObjFromText(texto){
+  modalResetObjUI();
+  if(!texto) return;
+  if(texto.includes('Bomba de Humo')){
+    modalObjState.categoria='bomba';
+    document.getElementById('modal-obj-bomba').classList.add('active');
+    document.getElementById('modal-obj-sub-bomba').classList.remove('hidden');
+    const found=Object.entries(modalObjBombaLabels).find(([k,v])=>texto.includes(v));
+    if(found) document.getElementById('modal-obj-bomba-select').value=found[0];
+  } else if(texto.includes('Miedo')){
+    modalObjState.categoria='miedo';
+    document.getElementById('modal-obj-miedo').classList.add('active');
+    document.getElementById('modal-obj-sub-miedo').classList.remove('hidden');
+    Object.entries(modalMiedoLabels).forEach(([k,v])=>{
+      if(texto.includes(v)){
+        modalObjState.miedoTags.push(k);
+        document.getElementById('modal-miedo-'+k).classList.add('active-miedo');
+      }
+    });
+    if(texto.includes('+ Dinero')){modalObjState.miedoCombo.push('dinero');document.getElementById('modal-miedo-combo-dinero').classList.add('active');}
+    if(texto.includes('+ Logística')){modalObjState.miedoCombo.push('logistica');document.getElementById('modal-miedo-combo-logistica').classList.add('active');}
+  } else if(texto.includes('Dinero')){
+    modalObjState.categoria='dinero';
+    document.getElementById('modal-obj-dinero').classList.add('active');
+  } else if(texto.includes('Logística')){
+    modalObjState.categoria='logistica';
+    document.getElementById('modal-obj-logistica').classList.add('active');
+  }
+  document.getElementById('call-objecion').value=texto;
+}
+
+function toggleCuotaCheckbox(){
+  const estado=document.getElementById('call-estado').value;
+  const wrap=document.getElementById('call-primera-cuota-wrap');
+  if(estado==='cerrada'){wrap.classList.remove('hidden');}
+  else{wrap.classList.add('hidden');document.getElementById('call-primera-cuota').checked=false;}
+}
+function openAddCall(){
+  document.getElementById('modal-call-title').textContent='Nueva Call';
+  document.getElementById('btn-save-call').textContent='Guardar Call';
+  document.getElementById('call-fecha').value=today();
+  ['call-lead-name','call-notas'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('call-estado').value='';
+  document.getElementById('call-edit-id').value='';
+  document.getElementById('call-primera-cuota').checked=false;
+  document.getElementById('call-cash-collected').value='';
+  toggleCuotaCheckbox();
+  modalResetObjUI();
+  openModal('modal-add-call');
+}
+function openEditCall(id){
+  const c=state.calls.find(x=>x.id===id);if(!c)return;
+  document.getElementById('modal-call-title').textContent='Editar Call';
+  document.getElementById('btn-save-call').textContent='Actualizar Call';
+  document.getElementById('call-fecha').value=c.fecha;
+  document.getElementById('call-lead-name').value=c.nombre;
+  document.getElementById('call-estado').value=c.estado;
+  document.getElementById('call-notas').value=c.notas||'';
+  document.getElementById('call-edit-id').value=id;
+  document.getElementById('call-primera-cuota').checked=c.primeraCuotaPagada!==false;
+  document.getElementById('call-cash-collected').value=c.cashCollected||'';
+  toggleCuotaCheckbox();
+  modalLoadObjFromText(c.objecion||'');
+  openModal('modal-add-call');
+}
+async function saveCall(){
+  const nombre=document.getElementById('call-lead-name').value.trim();
+  const estado=document.getElementById('call-estado').value;
+  const fecha=document.getElementById('call-fecha').value;
+  const objecion=document.getElementById('call-objecion').value.trim();
+  const notas=document.getElementById('call-notas').value.trim();
+  const editId=document.getElementById('call-edit-id').value;
+  const primeraCuotaPagada=estado==='cerrada'?document.getElementById('call-primera-cuota').checked:false;
+  const cashCollected=estado==='cerrada'?(parseFloat(document.getElementById('call-cash-collected').value)||0):0;
+  if(!nombre||!estado){alert('Completá nombre y estado');return;}
+  let callObj;
+  if(editId){
+    const idx=state.calls.findIndex(c=>c.id==editId);
+    if(idx>-1){
+      state.calls[idx]={...state.calls[idx],nombre,estado,fecha:fecha||today(),objecion,notas,primeraCuotaPagada,cashCollected};
+      callObj=state.calls[idx];
+    }
+  }else{
+    callObj={id:Date.now(),nombre,empresa:'',estado,fecha:fecha||today(),objecion,notas,cashCollected,contractedRevenue:0,programa:'',primeraCuotaPagada};
+    state.calls.push(callObj);
+  }
+  saveState();
+  closeModal('modal-add-call');
+  updateOverview();
+  if(callObj) saveCall_sb(callObj).catch(e=>console.error('Supabase sync error:',e));
+  if(callObj) syncCallToHotLead(callObj);
+}
+
+function syncCallToHotLead(callObj){
+  const lead=hotLeads.find(l=>l.nombre===callObj.nombre && (l.empresa||'')===(callObj.empresa||''));
+  if(!lead)return;
+  let changed=false;
+  if(callObj.objecion && lead.objecion!==callObj.objecion){ lead.objecion=callObj.objecion; changed=true; }
+  if(callObj.notas && lead.notas!==callObj.notas){ lead.notas=callObj.notas; changed=true; }
+  if(changed){
+    saveHotList();
+    saveHotLead_sb(lead).catch(e=>console.error('Supabase HL sync:',e));
+  }
+}
+
+async function deleteCall(id){
+  if(!confirm('¿Eliminar esta call?'))return;
+  state.calls=state.calls.filter(c=>c.id!==id);
+  saveState();updateOverview();
+  deleteCall_sb(id).catch(e=>console.error('Supabase delete error:',e));
+}
+
+// ===== AI =====
+async function callOpenAI(prompt){
+  const k=getApiKey();if(!k)throw new Error('NO_KEY');
+  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+  if(!res.ok){const err=await res.json();throw new Error(err.error?.message||'Error de API');}
+  const data=await res.json();return data.choices?.[0]?.message?.content||'Sin respuesta';
+}
+function noKeyMessage(outputEl){outputEl.innerHTML=`<div style="padding:8px 0;color:var(--text2)">⚠️ <strong>API key no configurada.</strong><br><a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent2)">→ Crear una API key aquí</a> &nbsp;·&nbsp; <span style="color:var(--accent2);cursor:pointer" onclick="openSettingsModal()">→ Configurar ahora</span></div>`;}
+
+// ===== LEADS =====
+function updateLeadsList(){
+  const list=document.getElementById('leads-folder-list');
+  if(!list)return;
+  if(state.leads.length===0){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">📁</div><div class="empty-state-text">Aun no creaste carpetas de leads</div></div>';return;}
+}
+function openEditLead(id){
+  const l=state.leads.find(x=>x.id===id);if(!l)return;
+  document.getElementById('edit-lead-id').value=id;
+  document.getElementById('edit-lead-nombre').value=l.nombre;
+  document.getElementById('edit-lead-fecha').value=l.fecha;
+  document.getElementById('edit-lead-prob').value=l.data?.probabilidad_cierre||'Media';
+  openModal('modal-edit-lead');
+}
+function saveEditLead(){
+  const id=parseInt(document.getElementById('edit-lead-id').value);
+  const idx=state.leads.findIndex(l=>l.id===id);if(idx<0)return;
+  state.leads[idx].nombre=document.getElementById('edit-lead-nombre').value.trim();
+  state.leads[idx].fecha=document.getElementById('edit-lead-fecha').value;
+  state.leads[idx].data.probabilidad_cierre=document.getElementById('edit-lead-prob').value;
+  saveState();closeModal('modal-edit-lead');updateLeadsList();
+}
+function deleteLead(id){
+  if(!confirm('¿Eliminar esta carpeta de lead?'))return;
+  state.leads=state.leads.filter(l=>l.id!==id);saveState();updateLeadsList();
+}
+
+// ===== HOT LIST =====
+function openAddHotLead(){
+  document.getElementById('modal-hot-title').textContent='Agregar Lead — Hot List';
+  document.getElementById('hl-edit-id').value='';
+  ['hl-nombre','hl-transcript','hl-notas'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('hl-estado').value='hot';
+  document.getElementById('hl-ultimo-contacto').value=today();
+  document.getElementById('hl-proximo-followup').value='';
+  openModal('modal-add-hot-lead');
+}
+function openEditHotLead(id){
+  const lead=hotLeads.find(l=>l.id===id);if(!lead)return;
+  document.getElementById('modal-hot-title').textContent='Editar Lead';
+  document.getElementById('hl-edit-id').value=id;
+  document.getElementById('hl-nombre').value=lead.nombre;
+  document.getElementById('hl-estado').value=lead.estado;
+  document.getElementById('hl-ultimo-contacto').value=lead.ultimoContacto||'';
+  document.getElementById('hl-proximo-followup').value=lead.proximoFollowup||'';
+  document.getElementById('hl-transcript').value=lead.transcript||'';
+  document.getElementById('hl-notas').value=lead.notas||'';
+  openModal('modal-add-hot-lead');
+}
+async function saveHotLead(){
+  const nombre=document.getElementById('hl-nombre').value.trim();
+  if(!nombre){alert('Ingresá el nombre del lead');return;}
+  const editId=document.getElementById('hl-edit-id').value;
+  const data={
+    nombre,
+    estado:document.getElementById('hl-estado').value,
+    ultimoContacto:document.getElementById('hl-ultimo-contacto').value,
+    proximoFollowup:document.getElementById('hl-proximo-followup').value,
+    transcript:document.getElementById('hl-transcript').value.trim(),
+    notas:document.getElementById('hl-notas').value.trim(),
+    mensajes:[]
+  };
+  if(editId){
+    const idx=hotLeads.findIndex(l=>l.id==editId);
+    if(idx>-1){data.id=hotLeads[idx].id;data.mensajes=hotLeads[idx].mensajes||[];hotLeads[idx]=data;}
+  }else{
+    data.id=Date.now();
+    hotLeads.push(data);
+  }
+  await saveHotList();
+  saveHotLead_sb(data).catch(e=>console.error('Supabase HL sync:',e));
+  closeModal('modal-add-hot-lead');renderHotList();
+}
+async function deleteHotLead(id){
+  if(!confirm('¿Eliminar este lead de la Hot List?'))return;
+  hotLeads=hotLeads.filter(l=>l.id!==id);
+  await saveHotList();
+  deleteHotLead_sb(id).catch(e=>console.error('Supabase HL delete:',e));
+  renderHotList();
+}
+function filterHotlist(filter,btn){
+  hlFilter=filter;
+  document.querySelectorAll('.hl-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHotList();
+}
+function renderHotList(){
+  let leads=[...hotLeads];
+  if(closerFilter!=='todos') leads=leads.filter(l=>l.closer===closerFilter);
+  if(leadSearchQuery) leads=leads.filter(l=>(l.nombre||'').toLowerCase().includes(leadSearchQuery));
+  const today7=new Date();today7.setDate(today7.getDate()+7);
+  const t7=today7.toISOString().slice(0,10);
+  
+  if(hlFilter==='hot') leads=leads.filter(l=>l.puntuacion>=8);
+  else if(hlFilter==='tibio') leads=leads.filter(l=>l.puntuacion>=4&&l.puntuacion<=7);
+  else if(hlFilter==='frio') leads=leads.filter(l=>!l.puntuacion||l.puntuacion<=3);
+  else if(hlFilter==='proximos7') leads=leads.filter(l=>l.proximoFollowup&&l.proximoFollowup<=t7&&l.proximoFollowup>=today());
+  
+  leads.forEach(l=>{
+    if(l.puntuacion>=8) l.estado='hot';
+    else if(l.puntuacion>=4) l.estado='tibio';
+    else if(l.puntuacion) l.estado='frio';
+  });
+
+  const grid=document.getElementById('hotlist-grid');
+  if(leads.length===0){
+    grid.innerHTML='<div class="empty-state"><div class="empty-state-icon">🔥</div><div class="empty-state-text">No hay leads con este filtro.</div></div>';
+    return;
+  }
+  const puntColor=(p)=>!p?'var(--text3)':p>=8?'var(--red)':p>=4?'var(--orange)':'var(--blue)';
+  const mensajesPendientes=(l)=>(l.mensajes||[]).filter(m=>!m.enviado).length;
+  
+  const grupos=[
+    {key:'hot',label:'🔥 Hot — 8 a 10',leads:leads.filter(l=>l.estado==='hot')},
+    {key:'tibio',label:'⚡ Tibio — 4 a 7',leads:leads.filter(l=>l.estado==='tibio')},
+    {key:'frio',label:'❄️ Frío — 1 a 3',leads:leads.filter(l=>l.estado==='frio'||!l.puntuacion)},
+  ].filter(g=>g.leads.length>0);
+
+  grid.innerHTML = grupos.map(g=>`
+    <div style="margin-bottom:24px;">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">${g.label} <span style="font-size:11px;font-weight:400;color:var(--text3);">(${g.leads.length})</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        ${g.leads.map(l=>`
+          <div class="hl-card ${l.estado}" style="cursor:pointer;" onclick="openHotLeadDetail(${l.id})">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+              <div>
+                <div class="hl-card-name">${l.nombre}</div>
+                ${l.empresa?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">${l.empresa}</div>`:''}
+              </div>
+              <div style="font-size:20px;font-weight:800;font-family:'DM Mono';color:${puntColor(l.puntuacion)};min-width:32px;text-align:right;">${l.puntuacion||'—'}</div>
+            </div>
+            <div style="display:flex;gap:4px;margin-bottom:10px;">
+              ${[1,2,3,4,5,6,7,8,9,10].map(n=>`
+                <button onclick="event.stopPropagation();setPuntuacion(${l.id},${n})" style="width:22px;height:22px;border-radius:4px;border:1px solid ${l.puntuacion===n?puntColor(n):'var(--border2)'};background:${l.puntuacion===n?puntColor(n)+'22':'transparent'};color:${l.puntuacion===n?puntColor(n):'var(--text3)'};font-size:9px;font-weight:700;cursor:pointer;transition:all .15s;">${n}</button>
+              `).join('')}
+            </div>
+            ${l.objecion?`<div style="font-size:11px;padding:5px 8px;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.15);border-radius:5px;color:var(--red);margin-bottom:8px;">⚠️ ${l.objecion}</div>`:''}
+            ${l.proximoFollowup?`<div class="hl-card-meta">📅 <strong>${l.proximoFollowup}</strong></div>`:''}
+            ${mensajesPendientes(l)>0?`<div class="hl-card-meta" style="color:var(--yellow);">💬 ${mensajesPendientes(l)} pendiente${mensajesPendientes(l)>1?'s':''}</div>`:''}
+            <div class="hl-card-actions" style="margin-top:10px;">
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditHotLead(${l.id})">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteHotLead(${l.id})">✕</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openHotLeadDetail(id){
+  const lead=hotLeads.find(l=>l.id===id);if(!lead)return;
+  const estadoEmoji={hot:'🔥',tibio:'⚡',frio:'❄️'};
+  const puntColor=(p)=>p>=8?'var(--green)':p>=5?'var(--yellow)':'var(--red)';
+  document.getElementById('modal-hot-detail-title').textContent=`${estadoEmoji[lead.estado]||''} ${lead.nombre}${lead.empresa?' · '+lead.empresa:''}`;
+  const mensajes=lead.mensajes||[];
+  document.getElementById('modal-hot-detail-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;border:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Último contacto</div>
+        <div style="font-size:13px;font-weight:600;">${lead.ultimoContacto||'—'}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;border:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Próximo follow-up</div>
+        <div style="font-size:13px;font-weight:700;color:var(--yellow);">${lead.proximoFollowup||'—'}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;border:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Calidad del lead</div>
+        <div style="font-size:18px;font-weight:800;font-family:'DM Mono',monospace;color:${lead.puntuacion?puntColor(lead.puntuacion):'var(--text3)'};">${lead.puntuacion||'—'}/10</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">Puntuá el lead (1-10)</div>
+      <div style="display:flex;gap:5px;">
+        ${[1,2,3,4,5,6,7,8,9,10].map(n=>`
+          <button onclick="setPuntuacionAndRefresh(${id},${n})" style="width:32px;height:32px;border-radius:6px;border:1px solid ${lead.puntuacion===n?puntColor(n):'var(--border2)'};background:${lead.puntuacion===n?puntColor(n)+'22':'var(--surface2)'};color:${lead.puntuacion===n?puntColor(n):'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;">${n}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">⚠️ Objeción principal</div>
+      <select id="hl-detail-objecion-${id}" class="input" style="font-size:13px;" onchange="saveLeadField(${id},'objecion',this.value)">
+        <option value="" ${!lead.objecion?'selected':''}>Sin objeción</option>
+        <option value="🌫️ Bomba de Humo" ${lead.objecion==='🌫️ Bomba de Humo'?'selected':''}>🌫️ Bomba de Humo</option>
+        <option value="💰 Dinero" ${lead.objecion==='💰 Dinero'?'selected':''}>💰 Dinero</option>
+        <option value="🚚 Logística" ${lead.objecion==='🚚 Logística'?'selected':''}>🚚 Logística</option>
+        <option value="😰 Miedo" ${lead.objecion==='😰 Miedo'?'selected':''}>😰 Miedo</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">📊 Análisis de la call</div>
+      <textarea id="hl-detail-analisis-${id}" class="input" style="min-height:100px;font-size:13px;" placeholder="¿Qué pasó en la call? ¿Qué quedó pendiente? ¿Cómo estaba el lead emocionalmente?" onblur="saveLeadField(${id},'analisisCall',this.value)">${lead.analisisCall||''}</textarea>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">📝 Notas</div>
+      <textarea id="hl-detail-notas-${id}" class="input" style="min-height:80px;font-size:13px;" placeholder="Contexto, próximos pasos, lo que necesites recordar..." onblur="saveLeadField(${id},'notas',this.value)">${lead.notas||''}</textarea>
+    </div>
+
+    <hr class="divider">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;">💬 Mensajes de seguimiento</div>
+      <button class="btn btn-primary btn-sm" onclick="addFollowupMessage(${id})">➕ Agregar</button>
+    </div>
+    <div id="hl-mensajes-list-${id}">
+      ${mensajes.length===0
+        ?'<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px;background:var(--surface2);border-radius:8px;">Sin mensajes aún — agregá el primero</div>'
+        :mensajes.map((m,i)=>`
+          <div style="background:var(--surface2);border-radius:8px;padding:14px;margin-bottom:8px;border:1px solid ${m.enviado?'rgba(16,185,129,.2)':'var(--border)'};transition:all .2s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div style="display:flex;gap:8px;align-items:center;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                  <input type="checkbox" ${m.enviado?'checked':''} onchange="toggleMensajeEnviado(${id},${i})" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;">
+                  <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:${m.canal==='WhatsApp'?'rgba(16,185,129,.1)':m.canal==='Email'?'rgba(59,130,246,.1)':'rgba(251,146,60,.1)'};color:${m.canal==='WhatsApp'?'var(--green)':m.canal==='Email'?'var(--accent2)':'var(--orange)'};">${m.canal}</span>
+                  ${m.fecha?`<span style="font-size:11px;color:var(--text3);">📅 ${m.fecha}</span>`:''}
+                </label>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="deleteMensaje(${id},${i})">✕</button>
+            </div>
+            <div style="font-size:13px;line-height:1.5;color:${m.enviado?'var(--text3)':'var(--text)'};${m.enviado?'text-decoration:line-through;':''}">${m.texto}</div>
+            ${m.enviado?'<div style="font-size:11px;color:var(--green);margin-top:6px;">✓ Enviado</div>':''}
+          </div>
+        `).join('')}
+    </div>
+  `;
+  openModal('modal-hot-detail');
+}
+
+function setPuntuacionAndRefresh(id, val) {
+  const lead=hotLeads.find(l=>l.id===id);if(!lead)return;
+  const notasEl=document.getElementById('hl-detail-notas-'+id);
+  const analisisEl=document.getElementById('hl-detail-analisis-'+id);
+  if(notasEl && notasEl.value!==lead.notas) lead.notas=notasEl.value;
+  if(analisisEl && analisisEl.value!==lead.analisisCall) lead.analisisCall=analisisEl.value;
+  lead.puntuacion=val;
+  saveHotList();
+  saveHotLead_sb(lead).catch(e=>console.error('Supabase punt sync:',e));
+  openHotLeadDetail(id);
+}
+
+function saveLeadField(id, field, value) {
+  const lead=hotLeads.find(l=>l.id===id);if(!lead)return;
+  if(lead[field]===value)return;
+  lead[field]=value;
+  saveHotList();
+  saveHotLead_sb(lead).catch(e=>console.error('Supabase field sync:',e));
+  renderHotList();
+  syncLeadToCalls(lead);
+}
+
+function syncLeadToCalls(lead){
+  let changed=false;
+  state.calls.forEach(c=>{
+    if(c.nombre===lead.nombre && (c.empresa||'')===(lead.empresa||'')){
+      if(lead.objecion && c.objecion!==lead.objecion){ c.objecion=lead.objecion; changed=true; }
+      saveCall_sb(c).catch(e=>console.error('Supabase call sync:',e));
+    }
+  });
+  if(changed){ saveState(); updateOverview(); }
+}
+
+function addFollowupMessage(leadId){
+  const texto=prompt('✍️ Escribí el mensaje de follow-up:');
+  if(!texto||!texto.trim())return;
+  const canalOpts=['WhatsApp','Email','Llamada'];
+  const canalStr=prompt('Canal:\n1. WhatsApp\n2. Email\n3. Llamada\n\nEscribí el número:','1');
+  const canal=canalOpts[parseInt(canalStr)-1]||'WhatsApp';
+  const fecha=prompt('Fecha sugerida (YYYY-MM-DD):',today())||today();
+  const lead=hotLeads.find(l=>l.id===leadId);if(!lead)return;
+  if(!lead.mensajes)lead.mensajes=[];
+  lead.mensajes.push({texto:texto.trim(),canal,fecha,enviado:false});
+  saveHotList();openHotLeadDetail(leadId);
+}
+function toggleMensajeEnviado(leadId,idx){
+  const lead=hotLeads.find(l=>l.id===leadId);if(!lead||!lead.mensajes[idx])return;
+  lead.mensajes[idx].enviado=!lead.mensajes[idx].enviado;
+  saveHotList();openHotLeadDetail(leadId);
+}
+function deleteMensaje(leadId,idx){
+  const lead=hotLeads.find(l=>l.id===leadId);if(!lead)return;
+  lead.mensajes.splice(idx,1);saveHotList();openHotLeadDetail(leadId);
+}
+
+// ===== PERFORMANCE =====
+function updatePerformance(){
+  const closerCalls=closerFilter==='todos'?closerCalls:closerCalls.filter(c=>c.closer===closerFilter);
+  const m=getMonthRange();
+  const callsMes=closerCalls.filter(c=>c.fecha>=m.start&&c.fecha<=m.end);
+  const totalMes=callsMes.length;
+  const cerradasMes=callsMes.filter(isCierreReal).length;
+  const noCerradasMes=callsMes.filter(c=>c.estado==='no-cerrada').length;
+  const seguimientoMes=callsMes.filter(c=>c.estado==='seguimiento'||c.estado==='agendada').length;
+  const pendCuotaMes=callsMes.filter(isCerradaPendienteCuota).length;
+  const denomMes=cerradasMes+noCerradasMes+seguimientoMes+pendCuotaMes;
+  const tasaMes=denomMes>0?Math.round((cerradasMes/denomMes)*100):0;
+  const leadsActivos=closerCalls.filter(c=>c.estado==='seguimiento'||c.estado==='agendada').length;
+  document.getElementById('perf-calls').textContent=totalMes;
+  document.getElementById('perf-tasa').textContent=tasaMes+'%';
+  document.getElementById('perf-leads-activos').textContent=leadsActivos;
+  const metas=loadMetas();
+  if(metas.calls&&parseInt(metas.calls)>0){
+    const pct=Math.min(Math.round((totalMes/parseInt(metas.calls))*100),100);
+    document.getElementById('perf-meta-pct').textContent=pct+'%';
+  }else{document.getElementById('perf-meta-pct').textContent='—';}
+  const w0=getWeekRange(0),w1=getWeekRange(-1);
+  const callsW0=closerCalls.filter(c=>c.fecha>=w0.start&&c.fecha<=w0.end);
+  const callsW1=closerCalls.filter(c=>c.fecha>=w1.start&&c.fecha<=w1.end);
+  document.getElementById('pw-calls-cur').textContent=callsW0.length;
+  document.getElementById('pw-calls-prev').textContent=callsW1.length;
+  document.getElementById('pw-cierres-cur').textContent=callsW0.filter(c=>c.estado==='cerrada').length;
+  document.getElementById('pw-cierres-prev').textContent=callsW1.filter(c=>c.estado==='cerrada').length;
+  document.getElementById('pw-followups-cur').textContent=callsW0.filter(c=>c.estado==='seguimiento'||c.estado==='agendada').length;
+  document.getElementById('pw-followups-prev').textContent=callsW1.filter(c=>c.estado==='seguimiento'||c.estado==='agendada').length;
+  const tieneCierre=closerCalls.some(c=>c.estado==='cerrada');
+  if(tieneCierre)document.getElementById('badge-primera-venta').classList.add('unlocked');
+  const callsHoy=closerCalls.filter(c=>c.fecha===today()).length;
+  if(callsHoy>=5)document.getElementById('badge-5calls').classList.add('unlocked');
+  if(callsW0.length>=10)document.getElementById('badge-semana-fuego').classList.add('unlocked');
+  if(tasaMes>=30)document.getElementById('badge-tasa30').classList.add('unlocked');
+}
+
+// ===== METAS =====
+function loadMetas(){try{const m=localStorage.getItem('scd_metas');return m?JSON.parse(m):{calls:'',cierres:'',tasa:''};}catch(e){return{calls:'',cierres:'',tasa:''};}}
+function saveMetas(){
+  const calls=document.getElementById('meta-calls').value;
+  const cierres=document.getElementById('meta-cierres').value;
+  const tasa=document.getElementById('meta-tasa').value;
+  if(!calls&&!cierres&&!tasa){alert('Ingresa al menos una meta');return;}
+  localStorage.setItem('scd_metas',JSON.stringify({calls,cierres,tasa}));
+  renderMetasProgress();
+  alert('✅ Metas guardadas');
+}
+function renderMetasProgress(){
+  const metas=loadMetas();
+  if(metas.calls)document.getElementById('meta-calls').value=metas.calls;
+  if(metas.cierres)document.getElementById('meta-cierres').value=metas.cierres;
+  if(metas.tasa)document.getElementById('meta-tasa').value=metas.tasa;
+  const now=new Date();
+  const el=document.getElementById('perf-month-label');
+  if(el)el.textContent=now.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+  const m=getMonthRange();
+  const calls=state.calls.filter(c=>c.fecha>=m.start&&c.fecha<=m.end);
+  const realCalls=calls.length;
+  const realCierres=calls.filter(isCierreReal).length;
+  const realTasa=realCalls>0?Math.round((realCierres/realCalls)*100):0;
+  function updateBar(realVal,metaVal,barId,valId,pctId,statusId,unit=''){
+    const hasMeta=metaVal&&parseInt(metaVal)>0;
+    const meta=hasMeta?parseInt(metaVal):0;
+    const pct=hasMeta?Math.min(Math.round((realVal/meta)*100),100):0;
+    document.getElementById(barId).style.width=(hasMeta?pct:0)+'%';
+    const color=pct>=100?'var(--green)':pct>=60?'var(--yellow)':'var(--red)';
+    document.getElementById(barId).style.background=color;
+    document.getElementById(valId).textContent=`${realVal}${unit} / ${hasMeta?metaVal+unit:'—'} objetivo`;
+    document.getElementById(pctId).textContent=hasMeta?pct+'%':'—';
+    const statusEl=document.getElementById(statusId);
+    if(!hasMeta){statusEl.innerHTML='Establece una meta para ver el progreso';return;}
+    const remaining=meta-realVal;
+    if(pct>=100)statusEl.innerHTML=`<span style="color:var(--green)">🎉 Meta alcanzada!</span>`;
+    else statusEl.innerHTML=`<span>${remaining>0?remaining:0} ${unit||'unidades'} para la meta · ${pct}% completado</span>`;
+  }
+  updateBar(realCalls,metas.calls,'meta-calls-bar','meta-calls-vals','meta-calls-pct','meta-calls-status',' calls');
+  updateBar(realCierres,metas.cierres,'meta-cierres-bar','meta-cierres-vals','meta-cierres-pct','meta-cierres-status',' cierres');
+  updateBar(realTasa,metas.tasa,'meta-tasa-bar','meta-tasa-vals','meta-tasa-pct','meta-tasa-status','%');
+
+  const calcEl=document.getElementById('calculadora-output');
+  if(!calcEl)return;
+  const metaCalls=parseInt(metas.calls)||0;
+  const metaCierres=parseInt(metas.cierres)||0;
+  const diasMes=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const diaActual=now.getDate();
+  const diasRestantes=diasMes-diaActual+1;
+  const semanasRestantes=Math.ceil(diasRestantes/7);
+  let promedioCallsSemanal=0;
+  let promedioCierresSemanal=0;
+  for(let i=0;i<4;i++){
+    const w=getWeekRange(-i);
+    const wCalls=state.calls.filter(c=>c.fecha>=w.start&&c.fecha<=w.end);
+    promedioCallsSemanal+=wCalls.length;
+    promedioCierresSemanal+=wCalls.filter(c=>c.estado==='cerrada').length;
+  }
+  promedioCallsSemanal=Math.round(promedioCallsSemanal/4);
+  promedioCierresSemanal=Math.round(promedioCierresSemanal/4);
+  const callsFaltantes=Math.max(0,metaCalls-realCalls);
+  const cierresFaltantes=Math.max(0,metaCierres-realCierres);
+  const callsPorDia=diasRestantes>0?Math.ceil(callsFaltantes/diasRestantes):callsFaltantes;
+  const callsPorSemana=semanasRestantes>0?Math.ceil(callsFaltantes/semanasRestantes):callsFaltantes;
+  const cierresPorSemana=semanasRestantes>0?Math.ceil(cierresFaltantes/semanasRestantes):cierresFaltantes;
+  if(!metaCalls&&!metaCierres){
+    calcEl.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px;">Establecé metas para ver el cálculo.</div>';
+    return;
+  }
+  calcEl.innerHTML=`
+    <div style="display:grid;gap:10px;">
+      ${metaCalls?`<div style="background:var(--surface2);border-radius:8px;padding:14px;border:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">📞 Calls restantes</div>
+        <div style="font-size:22px;font-weight:800;font-family:'DM Mono';color:var(--accent2)">${callsFaltantes}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;">${callsPorSemana}/semana · ${callsPorDia}/día para los próximos ${diasRestantes} días</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Tu promedio actual: ${promedioCallsSemanal} calls/semana</div>
+      </div>`:''}
+      ${metaCierres?`<div style="background:var(--surface2);border-radius:8px;padding:14px;border:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">✅ Cierres restantes</div>
+        <div style="font-size:22px;font-weight:800;font-family:'DM Mono';color:var(--green)">${cierresFaltantes}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;">${cierresPorSemana} cierre${cierresPorSemana!==1?'s':''}/semana para llegar a la meta</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Tu promedio actual: ${promedioCierresSemanal} cierres/semana</div>
+      </div>`:''}
+      ${diasRestantes<=7?`<div style="background:rgba(244,63,110,.08);border:1px solid rgba(244,63,110,.2);border-radius:8px;padding:12px;font-size:12px;color:var(--red);">⚠️ Quedan solo ${diasRestantes} días del mes.</div>`:''}
+    </div>`;
+}
+
+// ===== EXPORT / IMPORT =====
+function exportData(){
+  const data={calls:state.calls,leads:state.leads,hotLeads:hotLeads,metas:loadMetas(),exportDate:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='sales-dashboard-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(url);
+}
+function importData(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.calls||!data.leads){alert('Archivo invalido');return;}
+      if(!confirm(`¿Importar ${data.calls.length} calls y ${data.leads.length} leads? Esto reemplazara los datos actuales.`))return;
+      state.calls=data.calls;state.leads=data.leads;
+      if(data.hotLeads){hotLeads=data.hotLeads;saveHotList();}
+      if(data.metas)localStorage.setItem('scd_metas',JSON.stringify(data.metas));
+      // FIX: eliminada llamada a updateLeadsList() que no existe en esta página y causaba error
+      saveState();updateOverview();renderMetasProgress();
+      alert('✅ Datos importados correctamente');
+    }catch(e){alert('Error al leer el archivo: '+e.message);}
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+// ===== INIT =====
+async function init(){
+  const el=document.getElementById('save-status');
+  if(el) el.textContent='Cargando datos...';
+  try {
+    const sbCalls = await loadCalls();
+    const localCalls = state.calls || [];
+    const mergedMap = {};
+    localCalls.forEach(c => mergedMap[c.id] = c);
+    if(sbCalls) sbCalls.forEach(c => mergedMap[c.id] = c);
+    state.calls = Object.values(mergedMap);
+    if(sbCalls){
+      const sbIds = new Set(sbCalls.map(c=>c.id));
+      const faltantes = localCalls.filter(c => !sbIds.has(c.id));
+      for(const c of faltantes){ await saveCall_sb(c).catch(()=>{}); }
+    }
+    saveState();
+
+    const sbHL = await loadHotLeads_sb();
+    const localHL = hotLeads || [];
+    const mergedHLMap = {};
+    localHL.forEach(h => mergedHLMap[h.id] = h);
+    // FIX #3: Merge inteligente de hot leads — preserva campos locales si Supabase aún no los tiene
+    // Esto evita que la objeción/notas/análisis recién guardados se pierdan al recargar
+    if(sbHL) sbHL.forEach(h => {
+      const loc = mergedHLMap[h.id];
+      if(loc) {
+        mergedHLMap[h.id] = {
+          ...h,
+          objecion: h.objecion || loc.objecion || '',
+          analisisCall: h.analisisCall || loc.analisisCall || '',
+          notas: h.notas || loc.notas || '',
+        };
+      } else {
+        mergedHLMap[h.id] = h;
+      }
+    });
+    hotLeads = Object.values(mergedHLMap);
+    if(sbHL){
+      const sbHLIds = new Set(sbHL.map(h=>h.id));
+      const faltantesHL = localHL.filter(h => !sbHLIds.has(h.id));
+      for(const h of faltantesHL){ await saveHotLead_sb(h).catch(()=>{}); }
+    }
+    try{localStorage.setItem(HL_KEY,JSON.stringify(hotLeads));}catch(e){}
+
+    const sbCuotas = await loadCuotas_sb();
+    const localCuotas = cuotas || [];
+    const mergedCuotasMap = {};
+    localCuotas.forEach(c => mergedCuotasMap[c.id] = c);
+    // FIX #2: Merge inteligente de cuotas — si localmente está pagada pero Supabase dice que no,
+    // preservamos el estado "pagada" local para no perder el cambio recién hecho
+    if(sbCuotas) sbCuotas.forEach(c => {
+      const loc = mergedCuotasMap[c.id];
+      mergedCuotasMap[c.id] = (loc && loc.pagada && !c.pagada)
+        ? {...c, pagada: true, fechaPagada: loc.fechaPagada}
+        : c;
+    });
+    cuotas = Object.values(mergedCuotasMap);
+    if(sbCuotas){
+      const sbCuotasIds = new Set(sbCuotas.map(c=>c.id));
+      const faltantesCuotas = localCuotas.filter(c => !sbCuotasIds.has(c.id));
+      for(const c of faltantesCuotas){ await saveCuota_sb(c).catch(()=>{}); }
+    }
+    saveCuotasLocal();
+
+    if(el) el.textContent='✓ Conectado a Supabase';
+    setTimeout(()=>{if(el)el.textContent='Guardado automático ON';},2000);
+  } catch(e){
+    console.error('Error cargando desde Supabase:', e);
+    if(el) el.textContent='Sin conexión — usando datos locales';
+  }
+  updateOverview();
+  renderApiKeyStatus();
+  renderMetasProgress();
+  renderHotList();
+  renderCuotas();
+  loadCalcConfig();
+}
+init();
+</script>
+</body>
+</html>

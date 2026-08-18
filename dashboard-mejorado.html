@@ -328,6 +328,15 @@ select.input{cursor:pointer;}
             </div>
           </div>
         </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+          <span style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;">Metas e ingresos de</span>
+          <div style="display:flex;gap:6px;">
+            <button class="filter-btn active" id="meta-closer-grupal" onclick="setMetaCloser('grupal',this)">👥 Grupal</button>
+            <button class="filter-btn" id="meta-closer-manuela" onclick="setMetaCloser('manuela',this)">Manuela</button>
+            <button class="filter-btn" id="meta-closer-leandro" onclick="setMetaCloser('leandro',this)">Leandro</button>
+            <button class="filter-btn" id="meta-closer-ariel" onclick="setMetaCloser('ariel',this)">Ariel</button>
+          </div>
+        </div>
         <div class="two-col">
           <div class="section">
             <div class="section-header" style="margin-bottom:16px;">
@@ -373,7 +382,7 @@ select.input{cursor:pointer;}
 
           <div class="section">
             <div class="section-header" style="margin-bottom:16px;">
-              <div class="section-title">💰 Ingresos del Mes</div>
+              <div class="section-title">💰 Ingresos del Mes <span id="ingresos-closer-tag" style="font-size:11px;font-weight:600;color:var(--accent2);"></span></div>
               <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);padding:2px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);">
                 <button onclick="navIngresosMes(-1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;">‹</button>
                 <span class="section-badge" id="ingresos-mes-label" style="min-width:110px;text-align:center;"></span>
@@ -712,8 +721,8 @@ select.input{cursor:pointer;}
 
 <script>
 // ===== SUPABASE =====
-const SUPABASE_URL = 'PEGAR_TU_SUPABASE_URL_ACA';
-const SUPABASE_KEY = 'PEGAR_TU_SUPABASE_ANON_KEY_ACA';
+const SUPABASE_URL = 'https://cxqajwjrnbwyhewlmyfw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_WZKcG9kFyobPlZmJ58hzLw_J3hCWR2b';
 
 async function sbFetch(table, method='GET', body=null, query=''){
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
@@ -1296,6 +1305,17 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 // ===== CALCULADORA INVERSA =====
+let metaCloser='grupal';
+
+function setMetaCloser(cl, btn){
+  metaCloser=cl;
+  document.querySelectorAll('#meta-closer-grupal,#meta-closer-manuela,#meta-closer-leandro,#meta-closer-ariel').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const tagEl=document.getElementById('ingresos-closer-tag');
+  if(tagEl) tagEl.textContent = cl==='grupal' ? '' : '· '+cl.charAt(0).toUpperCase()+cl.slice(1);
+  loadCalcConfig();
+}
+
 function updateCalculadora(){
   const meta=parseFloat(document.getElementById('calc-meta-ingresos')?.value)||0;
   const ticket=parseFloat(document.getElementById('calc-ticket')?.value)||3000;
@@ -1339,12 +1359,17 @@ function updateCalculadora(){
     </div>
     <div style="font-size:11px;color:var(--text3);margin-top:10px;text-align:center;">Con ticket $${ticket.toLocaleString()} · ${tasa}% cierre · ${comision}% comisión</div>
   `;
-  try{localStorage.setItem('calc_config',JSON.stringify({meta,ticket,tasa,comision}));}catch(e){}
+  try{localStorage.setItem('calc_config_'+metaCloser,JSON.stringify({meta,ticket,tasa,comision}));}catch(e){}
   updateIngresosBar();
 }
 
 function loadCalcConfig(){
-  try{const c=localStorage.getItem('calc_config');if(c){const d=JSON.parse(c);
+  document.getElementById('calc-meta-ingresos').value='';
+  document.getElementById('calc-ticket').value=3000;
+  document.getElementById('calc-tasa').value=28;
+  document.getElementById('calc-comision').value=10;
+  const elInvDefault=document.getElementById('comision-invicta-pct');if(elInvDefault)elInvDefault.value=10;
+  try{const c=localStorage.getItem('calc_config_'+metaCloser);if(c){const d=JSON.parse(c);
     if(d.meta)document.getElementById('calc-meta-ingresos').value=d.meta;
     if(d.ticket)document.getElementById('calc-ticket').value=d.ticket;
     if(d.tasa)document.getElementById('calc-tasa').value=d.tasa;
@@ -1356,20 +1381,21 @@ function loadCalcConfig(){
 
 function saveComisionConfig(){
   try{
-    const c=localStorage.getItem('calc_config');
+    const c=localStorage.getItem('calc_config_'+metaCloser);
     const config=c?JSON.parse(c):{};
     config.comisionInvicta=parseFloat(document.getElementById('comision-invicta-pct').value)||10;
-    localStorage.setItem('calc_config',JSON.stringify(config));
+    localStorage.setItem('calc_config_'+metaCloser,JSON.stringify(config));
   }catch(e){}
   updateIngresosBar();
 }
 
 function updateIngresosBar(){
   try{
-    const c=localStorage.getItem('calc_config');
+    const c=localStorage.getItem('calc_config_'+metaCloser);
     const config=c?JSON.parse(c):{meta:0,ticket:3000,tasa:28,comision:10};
     const m=getIngresosMonthRange();
-    const callsMesCerradas=state.calls.filter(c2=>c2.fecha>=m.start&&c2.fecha<=m.end&&(c2.estado==='cerrada'||c2.estado==='cuota-cobrada'));
+    const baseCallsIngresos = metaCloser==='grupal' ? state.calls : state.calls.filter(c2=>c2.closer===metaCloser);
+    const callsMesCerradas=baseCallsIngresos.filter(c2=>c2.fecha>=m.start&&c2.fecha<=m.end&&(c2.estado==='cerrada'||c2.estado==='cuota-cobrada'));
     const comInvicta=config.comisionInvicta||10;
     let comSA=0;
     callsMesCerradas.forEach(c2=>{

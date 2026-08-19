@@ -446,6 +446,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
             <div class="field-label">Objeción en sus palabras</div>
             <input class="field-input" id="objecion-detalle" type="text" placeholder="Escribí exactamente lo que dijo..." oninput="updateForm('objecionDetalle',this.value)">
           </div>
+
+          <hr class="section-divider">
+          <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">5. ¿Qué pasa con el seguimiento?</div>
+          <div class="selector-group cols2" id="followup-type-buttons">
+            <div class="sel-btn" onclick="selectFollowUpType('pensando',this)"><span class="sel-btn-emoji">💬</span><div class="sel-btn-title">Sigue pensando</div><div class="sel-btn-sub">Queda en seguimiento</div></div>
+            <div class="sel-btn" onclick="selectFollowUpType('reagendo',this)"><span class="sel-btn-emoji">📅</span><div class="sel-btn-title">Puso fecha</div><div class="sel-btn-sub">Para volver a hablar / 2da reunión</div></div>
+            <div class="sel-btn" onclick="selectFollowUpType('otra_cosa',this)"><span class="sel-btn-emoji">🔍</span><div class="sel-btn-title">Buscaba otra cosa</div><div class="sel-btn-sub">No era lo que necesitaba</div></div>
+          </div>
+
+          <div id="followup-nota-group" class="field-group hidden" style="margin-top:12px;">
+            <div class="field-label" id="followup-nota-label">¿Qué dijo?</div>
+            <input class="field-input" id="followup-nota" type="text" placeholder="Escribí qué dijo el lead..." oninput="updateForm('followUpNota',this.value)">
+          </div>
+
+          <div id="followup-fecha-group" class="field-group hidden" style="margin-top:12px;">
+            <div class="field-label">Fecha para volver a hablar</div>
+            <input class="field-input" id="followup-fecha" type="date" oninput="updateForm('followUpFecha',this.value)">
+          </div>
         </div>
       </div>
     </div>
@@ -551,6 +569,7 @@ let form = {
   programa: null, cashCollected: '', contractedRevenue: '',
   usaCuotas: false, cantCuotas: '', montoCuota: '', fechaPrimeraCuota: '',
   objecionCategoria: null, objecionSub: null, objecionMiedoTags: [], objecionMiedoCombo: [], objecionDetalle: '', objecionResumen: '',
+  followUpType: null, followUpNota: '', followUpFecha: '',
   fathomLink: '', fathomTranscript: '', manualNotes: ''
 };
 
@@ -688,6 +707,21 @@ function select(field, value, el) {
     // Programas: en este proyecto siempre son los de Invicta, no hace falta togglear por empresa
   }
 
+  saveFormToStorage();
+  updateWizard();
+}
+
+function selectFollowUpType(type, el) {
+  form.followUpType = type;
+  document.querySelectorAll('#followup-type-buttons .sel-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const notaGroup = document.getElementById('followup-nota-group');
+  const fechaGroup = document.getElementById('followup-fecha-group');
+  const notaLabel = document.getElementById('followup-nota-label');
+  notaGroup.classList.toggle('hidden', type === 'reagendo');
+  fechaGroup.classList.toggle('hidden', type !== 'reagendo');
+  if(type === 'otra_cosa') notaLabel.textContent = '¿Qué buscaba?';
+  else notaLabel.textContent = '¿Qué dijo?';
   saveFormToStorage();
   updateWizard();
 }
@@ -892,13 +926,31 @@ function saveCall() {
     let estadoHot = 'tibio';
     if(form.callResult === 'attended' && form.pitched === 'si') estadoHot = 'hot';
     else if(form.callResult === 'noshow') estadoHot = 'frio';
-    const proxFU = new Date(); proxFU.setDate(proxFU.getDate()+3);
+
+    const followUpLabels = { pensando: '💬 Sigue pensando', reagendo: '📅 Puso fecha para 2da reunión', otra_cosa: '🔍 Buscaba otra cosa' };
+    let proximoFollowup, seguimientoNota, mensajeInicial;
+    if(form.followUpType === 'reagendo' && form.followUpFecha) {
+      proximoFollowup = form.followUpFecha;
+      seguimientoNota = followUpLabels.reagendo + (form.followUpNota ? (': ' + form.followUpNota) : '');
+      mensajeInicial = { texto: 'Segunda reunión agendada' + (form.followUpNota ? (' — ' + form.followUpNota) : ''), canal: 'Llamada', fecha: form.followUpFecha, enviado: false };
+    } else if(form.followUpType === 'otra_cosa') {
+      const proxFU = new Date(); proxFU.setDate(proxFU.getDate()+3);
+      proximoFollowup = proxFU.toISOString().slice(0,10);
+      seguimientoNota = followUpLabels.otra_cosa + (form.followUpNota ? (': ' + form.followUpNota) : '');
+      mensajeInicial = { texto: form.followUpNota || 'Revisar qué necesitaba el lead', canal: 'WhatsApp', fecha: proximoFollowup, enviado: false };
+    } else {
+      const proxFU = new Date(); proxFU.setDate(proxFU.getDate()+3);
+      proximoFollowup = proxFU.toISOString().slice(0,10);
+      seguimientoNota = form.followUpType === 'pensando' ? (followUpLabels.pensando + (form.followUpNota ? (': ' + form.followUpNota) : '')) : notas;
+      mensajeInicial = { texto: form.followUpNota || 'Hacer seguimiento', canal: 'WhatsApp', fecha: proximoFollowup, enviado: false };
+    }
+
     hotLeads.push({
       id: Date.now()+1, closer: form.closer || '', nombre: form.prospectName, empresa: empresaLabel,
       estado: estadoHot, ultimoContacto: fechaCall,
-      proximoFollowup: proxFU.toISOString().slice(0,10),
-      transcript: form.fathomTranscript || '', notas, objecion,
-      analisisCall: '', puntuacion: form.puntuacionLead || null, mensajes: [], fromSalesScript: true
+      proximoFollowup: proximoFollowup,
+      transcript: form.fathomTranscript || '', notas: seguimientoNota, objecion,
+      analisisCall: '', puntuacion: form.puntuacionLead || null, mensajes: [mensajeInicial], fromSalesScript: true
     });
     try { localStorage.setItem('hotlist_leads', JSON.stringify(hotLeads)); } catch(e){}
     // Sincronizar hot lead con Supabase
@@ -906,7 +958,7 @@ function saveCall() {
   }
 
   // Reset
-  form = { closer:null, empresa:'sa-dental', callType:null, callDate:'', prospectName:'', prospectEmail:'', prospectPhone:'', puntuacionLead:null, decisionMaker:null, callResult:null, whoCancel:null, noshowType:null, pitched:null, closed:null, noPitchReason:null, programa:null, cashCollected:'', contractedRevenue:'', usaCuotas:false, cantCuotas:'', montoCuota:'', fechaPrimeraCuota:'', objecionCategoria:null, objecionSub:null, objecionMiedoTags:[], objecionMiedoCombo:[], objecionDetalle:'', objecionResumen:'', fathomLink:'', fathomTranscript:'', manualNotes:'' };
+  form = { closer:null, empresa:'sa-dental', callType:null, callDate:'', prospectName:'', prospectEmail:'', prospectPhone:'', puntuacionLead:null, decisionMaker:null, callResult:null, whoCancel:null, noshowType:null, pitched:null, closed:null, noPitchReason:null, programa:null, cashCollected:'', contractedRevenue:'', usaCuotas:false, cantCuotas:'', montoCuota:'', fechaPrimeraCuota:'', objecionCategoria:null, objecionSub:null, objecionMiedoTags:[], objecionMiedoCombo:[], objecionDetalle:'', objecionResumen:'', followUpType:null, followUpNota:'', followUpFecha:'', fathomLink:'', fathomTranscript:'', manualNotes:'' };
   saveFormToStorage();
   const badge = document.getElementById('save-badge');
   badge.style.display = 'inline'; badge.textContent = '✓ Guardado en Dashboard'; badge.style.color = 'var(--green)';

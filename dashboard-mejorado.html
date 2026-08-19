@@ -1942,6 +1942,7 @@ function renderHotList(){
               `).join('')}
             </div>
             ${l.objecion?`<div style="font-size:11px;padding:5px 8px;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.15);border-radius:5px;color:var(--red);margin-bottom:8px;">⚠️ ${l.objecion}</div>`:''}
+            ${l.notas?`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📝 ${l.notas}</div>`:''}
             ${l.proximoFollowup?`<div class="hl-card-meta">📅 <strong>${l.proximoFollowup}</strong></div>`:''}
             ${mensajesPendientes(l)>0?`<div class="hl-card-meta" style="color:var(--yellow);">💬 ${mensajesPendientes(l)} pendiente${mensajesPendientes(l)>1?'s':''}</div>`:''}
             <div class="hl-card-actions" style="margin-top:10px;">

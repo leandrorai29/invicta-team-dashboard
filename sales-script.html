@@ -137,12 +137,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* FIELD NOTE */
 .field-note{font-size:11px;color:var(--text3);margin-top:4px;}
 
+@media(max-width:900px){
+  .main{max-width:100%;padding:20px 16px 80px;}
+}
+
 @media(max-width:640px){
   .prospect-row{grid-template-columns:1fr;}
   .context-row{grid-template-columns:1fr;}
   .selector-group.cols2{grid-template-columns:1fr;}
-  .selector-group.cols2x2{grid-template-columns:1fr 1fr;}
+  .selector-group.cols2x2{grid-template-columns:1fr;}
+  .selector-group{grid-template-columns:1fr !important;}
+  [style*="grid-template-columns"]{grid-template-columns:1fr !important;}
   .topbar-title{font-size:12px;letter-spacing:2px;}
+  .nav-bar{padding:0 12px;overflow-x:auto;}
+  .nav-link{padding:0 12px;font-size:10px;white-space:nowrap;}
+  .topbar{flex-wrap:wrap;height:auto;padding:10px 12px;gap:8px;}
+  .main{padding:16px 12px 80px;}
+  .section{padding:16px !important;}
 }
 </style>
 </head>
@@ -500,8 +511,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <script>
 // ===== STATE =====
 // ===== SUPABASE =====
-const SUPABASE_URL = 'PEGAR_TU_SUPABASE_URL_ACA';
-const SUPABASE_KEY = 'PEGAR_TU_SUPABASE_ANON_KEY_ACA';
+const SUPABASE_URL = 'https://cxqajwjrnbwyhewlmyfw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_WZKcG9kFyobPlZmJ58hzLw_J3hCWR2b';
 async function sbSaveCall(call){
   try{await fetch(`${SUPABASE_URL}/rest/v1/calls?on_conflict=id`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:call.id,closer:call.closer||'',nombre:call.nombre,empresa:call.empresa||'',estado:call.estado,fecha:call.fecha,objecion:call.objecion||'',programa:call.programa||'',cash_collected:call.cashCollected||0,contracted_revenue:call.contractedRevenue||0,notas:call.notas||''})});}catch(e){console.error('SB call error:',e);}
 }

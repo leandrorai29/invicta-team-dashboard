@@ -9,10 +9,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return Response.json(
-        { error: "Falta configurar ANTHROPIC_API_KEY en las variables de entorno de Vercel." },
+        { error: "Falta configurar GEMINI_API_KEY en las variables de entorno de Vercel." },
         { status: 500 }
       );
     }
@@ -35,19 +35,17 @@ Transcripción:
 ${transcript.slice(0, 15000)}
 """`;
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-5",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 1000 },
+        }),
+      }
+    );
 
     if (!resp.ok) {
       const errText = await resp.text();
@@ -58,9 +56,8 @@ ${transcript.slice(0, 15000)}
     }
 
     const data = await resp.json();
-    const rawText = (data.content || [])
-      .map((b: { type: string; text?: string }) => b.text || "")
-      .join("\n");
+    const rawText: string =
+      data?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("\n") || "";
     const cleaned = rawText.replace(/```json|```/g, "").trim();
 
     let parsed;

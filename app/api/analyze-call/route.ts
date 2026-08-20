@@ -35,17 +35,26 @@ Transcripción:
 ${transcript.slice(0, 15000)}
 """`;
 
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.4, maxOutputTokens: 1000 },
-        }),
-      }
-    );
+    async function callGemini() {
+      return fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.4, maxOutputTokens: 1000 },
+          }),
+        }
+      );
+    }
+
+    let resp = await callGemini();
+    if (!resp.ok && resp.status === 503) {
+      // El modelo gratuito puede saturarse en picos — reintenta una vez
+      await new Promise((r) => setTimeout(r, 1500));
+      resp = await callGemini();
+    }
 
     if (!resp.ok) {
       const errText = await resp.text();

@@ -1999,6 +1999,15 @@ function openHotLeadDetail(id){
     </div>
 
     <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;">🎙️ Transcript (Fathom u otro)</div>
+        <button class="btn btn-primary btn-sm" id="hl-ai-btn-${id}" onclick="analyzeCallWithAI(${id})">🤖 Analizar con IA</button>
+      </div>
+      <textarea id="hl-detail-transcript-${id}" class="input" style="min-height:90px;font-size:12px;" placeholder="Pegá acá el transcript completo de la llamada..." onblur="saveLeadField(${id},'transcript',this.value)">${lead.transcript||''}</textarea>
+      <div id="hl-ai-result-${id}"></div>
+    </div>
+
+    <div style="margin-bottom:16px;">
       <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">📊 Análisis de la call</div>
       <textarea id="hl-detail-analisis-${id}" class="input" style="min-height:100px;font-size:13px;" placeholder="¿Qué pasó en la call? ¿Qué quedó pendiente? ¿Cómo estaba el lead emocionalmente?" onblur="saveLeadField(${id},'analisisCall',this.value)">${lead.analisisCall||''}</textarea>
     </div>
@@ -2048,6 +2057,49 @@ function setPuntuacionAndRefresh(id, val) {
   saveHotList();
   saveHotLead_sb(lead).catch(e=>console.error('Supabase punt sync:',e));
   openHotLeadDetail(id);
+}
+
+async function analyzeCallWithAI(id){
+  const lead = hotLeads.find(l=>l.id===id); if(!lead) return;
+  const transcriptEl = document.getElementById('hl-detail-transcript-'+id);
+  const transcript = transcriptEl ? transcriptEl.value.trim() : '';
+  const resultEl = document.getElementById('hl-ai-result-'+id);
+  const btn = document.getElementById('hl-ai-btn-'+id);
+  if(!transcript || transcript.length < 20){
+    resultEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:8px;">Pegá un transcript más completo antes de analizar.</div>';
+    return;
+  }
+  saveLeadField(id,'transcript',transcript);
+  btn.disabled = true; btn.textContent = 'Analizando...';
+  resultEl.innerHTML = '<div style="color:var(--text3);font-size:12px;margin-top:8px;">🤖 Analizando la llamada…</div>';
+  try{
+    const res = await fetch('/api/analyze-call', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ transcript, nombre: lead.nombre, objecionActual: lead.objecion })
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){
+      resultEl.innerHTML = `<div style="color:var(--red);font-size:12px;margin-top:8px;">${data.error||'Error analizando la llamada.'}</div>`;
+    } else {
+      resultEl.innerHTML = `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:10px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">🤖 Análisis de IA</div>
+          <div style="font-size:13px;margin-bottom:10px;">${data.resumen||''}</div>
+          ${data.objecionPrincipal?`<div style="font-size:12px;margin-bottom:8px;"><b>Objeción principal:</b> ${data.objecionPrincipal}</div>`:''}
+          ${data.queSalioBien&&data.queSalioBien.length?`<div style="font-size:12px;margin-bottom:8px;"><b>✅ Qué salió bien:</b><ul style="margin:4px 0 0 18px;">${data.queSalioBien.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}
+          ${data.queMejorar&&data.queMejorar.length?`<div style="font-size:12px;margin-bottom:8px;"><b>🔧 Qué mejorar:</b><ul style="margin:4px 0 0 18px;">${data.queMejorar.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}
+          ${data.proximoPasoSugerido?`<div style="font-size:12px;color:var(--yellow);"><b>➡️ Próximo paso:</b> ${data.proximoPasoSugerido}</div>`:''}
+        </div>`;
+      const analisisTexto=[data.resumen, data.proximoPasoSugerido?('Próximo paso: '+data.proximoPasoSugerido):''].filter(Boolean).join('\n\n');
+      const analisisEl=document.getElementById('hl-detail-analisis-'+id);
+      if(analisisEl && !analisisEl.value.trim()) analisisEl.value=analisisTexto;
+      saveLeadField(id,'analisisCall',analisisTexto);
+    }
+  }catch(e){
+    resultEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:8px;">Error de conexión. Probá de nuevo.</div>';
+  }
+  btn.disabled = false; btn.textContent = '🤖 Analizar con IA';
 }
 
 function saveLeadField(id, field, value) {

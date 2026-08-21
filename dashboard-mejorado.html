@@ -291,6 +291,7 @@ select.input{cursor:pointer;}
     </div>
     <nav>
       <div class="nav-item active" onclick="switchTab('overview')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="switchTab('ventas')"><span class="nav-icon">🎯</span> Ventas</div>
       <div class="nav-item" onclick="switchTab('hotlist')"><span class="nav-icon">🔥</span> Hot List</div>
       <div class="nav-item" onclick="switchTab('cuotas')"><span class="nav-icon">💳</span> Cuotas</div>
       <div class="nav-item" onclick="switchTab('performance')"><span class="nav-icon">📈</span> Performance</div>
@@ -344,12 +345,13 @@ select.input{cursor:pointer;}
 
       <!-- ===== OVERVIEW ===== -->
       <div id="tab-overview" class="tab-content active">
-        <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px;">
+        <div class="stats-row" style="grid-template-columns:repeat(6,1fr);margin-bottom:16px;">
           <div class="stat-card purple"><div class="stat-card-icon">📞</div><div class="stat-label">Calls Totales</div><div class="stat-value purple" id="stat-total">0</div><div class="stat-sub">Este período</div></div>
           <div class="stat-card green"><div class="stat-card-icon">✅</div><div class="stat-label">Cerradas</div><div class="stat-value green" id="stat-cerradas">0</div><div class="stat-sub" id="stat-rate">0% tasa de cierre</div></div>
           <div class="stat-card yellow"><div class="stat-card-icon">🔄</div><div class="stat-label">En Seguimiento</div><div class="stat-value yellow" id="stat-seguimiento">0</div><div class="stat-sub">Pendientes</div></div>
           <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">⏸️</div><div class="stat-label">No se Pitcheó</div><div class="stat-value" style="color:var(--orange)" id="stat-no-pitcheo">0</div><div class="stat-sub">No entra en tasa</div></div>
           <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificada</div><div class="stat-value" style="color:var(--text3)" id="stat-no-califica">0</div><div class="stat-sub">No entra en tasa</div></div>
+          <div class="stat-card" style="border-color:rgba(245,158,11,.2);"><div class="stat-card-icon" style="background:var(--surface3);">💼</div><div class="stat-label">Fee (vs PIF)</div><div class="stat-value" style="color:var(--yellow)" id="stat-fee">0</div><div class="stat-sub">Cerradas con Fee + Cuotas</div></div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px;">
@@ -484,6 +486,23 @@ select.input{cursor:pointer;}
               <tbody id="calls-table-body"><tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">Sin calls registradas aún</td></tr></tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- ===== VENTAS ===== -->
+      <div id="tab-ventas" class="tab-content">
+        <div class="section-header" style="margin-bottom:20px;">
+          <div style="font-size:17px;font-weight:700;">🎯 Métricas de Ventas</div>
+        </div>
+        <div class="section" style="max-width:520px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tbody id="ventas-table-body" style="font-size:13px;"></tbody>
+          </table>
+        </div>
+        <div class="section" style="max-width:520px;">
+          <div class="input-label">💸 Gasto en marketing del período (para CAC)</div>
+          <input class="input" id="ventas-gasto-marketing" type="text" placeholder="0" style="max-width:220px;" oninput="saveGastoMarketing(this.value)">
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Lo carga la persona responsable de marketing/ads — se usa para calcular el CAC de arriba.</div>
         </div>
       </div>
 
@@ -780,7 +799,7 @@ async function loadCalls(){
   const data = await sbFetch('calls','GET',null,'?order=created_at.asc');
   if(!data) return [];
   return data.map(c=>({
-    id:c.id, closer:c.closer||'', nombre:c.nombre, empresa:c.empresa||'', estado:c.estado,
+    id:c.id, closer:c.closer||'', canalCierre:c.canal_cierre||'', nombre:c.nombre, empresa:c.empresa||'', estado:c.estado,
     fecha:c.fecha, objecion:c.objecion||'', programa:c.programa||'',
     cashCollected:c.cash_collected||0, contractedRevenue:c.contracted_revenue||0, notas:c.notas||'',
     primeraCuotaPagada:c.primera_cuota_pagada===false?false:true,
@@ -790,7 +809,7 @@ async function loadCalls(){
 
 async function saveCall_sb(call){
   await sbFetch('calls','POST',{
-    id:call.id, closer:call.closer||'', nombre:call.nombre, empresa:call.empresa||'', estado:call.estado,
+    id:call.id, closer:call.closer||'', canal_cierre:call.canalCierre||null, nombre:call.nombre, empresa:call.empresa||'', estado:call.estado,
     fecha:call.fecha, objecion:call.objecion||'', programa:call.programa||'',
     cash_collected:call.cashCollected||0, contracted_revenue:call.contractedRevenue||0, notas:call.notas||'',
     primera_cuota_pagada:call.primeraCuotaPagada!==false,
@@ -1220,7 +1239,7 @@ function renderApiKeyStatus(){
 function openSettingsModal(){const k=getApiKey();if(k)document.getElementById('settings-api-key').value=k;renderApiKeyStatus();openModal('modal-settings');}
 
 // ===== NAV =====
-const tabTitles={overview:'Dashboard',leads:'Sales Tracker',hotlist:'Hot List',cuotas:'Cuotas',performance:'Performance'};
+const tabTitles={overview:'Dashboard',ventas:'Ventas',leads:'Sales Tracker',hotlist:'Hot List',cuotas:'Cuotas',performance:'Performance'};
 function switchTab(tab){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -1230,6 +1249,7 @@ function switchTab(tab){
   if(tab==='performance'){renderMetasProgress();updatePerformance();}
   if(tab==='hotlist'){renderHotList();}
   if(tab==='cuotas'){renderCuotas();}
+  if(tab==='ventas'){renderVentas();}
 }
 
 // ===== DATES =====
@@ -1247,6 +1267,64 @@ const INVICTA_LOGO_SVG='<svg width="14" height="14" viewBox="0 0 24 24" style="v
 // Mantenemos el matching de datos viejos (empresa/notas con "SA Dental") para no perder el historial.
 function isInvictaCall(c){return c.empresa==='Invicta'||c.empresa==='SA Dental'||(c.notas&&(c.notas.includes('Invicta')||c.notas.includes('SA Dental')));}
 function isCierreReal(c){return c.estado==='cerrada' && c.primeraCuotaPagada!==false;}
+
+function saveGastoMarketing(val){
+  try{localStorage.setItem('gasto_marketing',val);}catch(e){}
+  renderVentas();
+}
+
+function renderVentas(){
+  const calls=filterCalls();
+  const total=calls.length;
+  const noCalifica=calls.filter(c=>c.estado==='no-califica').length;
+  const calificadasAgendadas=total-noCalifica;
+  const pctCalificadas=total>0?(calificadasAgendadas/total*100):0;
+  const calificadasAsistidas=calls.filter(c=>c.estado!=='no-cerrada'&&c.estado!=='agendada'&&c.estado!=='no-califica').length;
+  const showUpRate=calificadasAgendadas>0?(calificadasAsistidas/calificadasAgendadas*100):0;
+
+  const cerradas=calls.filter(isCierreReal);
+  const cerradasTotales=cerradas.length;
+  const tasaCierre=calificadasAgendadas>0?(cerradasTotales/calificadasAgendadas*100):0;
+
+  const cerradasLlamada=cerradas.filter(c=>c.canalCierre==='llamada'||!c.canalCierre).length;
+  const cerradasPersona=cerradas.filter(c=>c.canalCierre==='presencial').length;
+  const cerradasSeguimiento=cerradas.filter(c=>c.canalCierre==='seguimiento').length;
+
+  const sumCash=cerradas.reduce((s,c)=>s+(Number(c.cashCollected)||0),0);
+  const sumContracted=cerradas.reduce((s,c)=>s+(Number(c.contractedRevenue)||0),0);
+  const aovDia1=cerradasTotales>0?(sumCash/cerradasTotales):0;
+  const aovCerrado=cerradasTotales>0?(sumContracted/cerradasTotales):0;
+  const pctCC=sumContracted>0?(sumCash/sumContracted*100):0;
+
+  let gasto=0;
+  try{gasto=Number(localStorage.getItem('gasto_marketing'))||0;}catch(e){}
+  const gastoEl=document.getElementById('ventas-gasto-marketing');
+  if(gastoEl && document.activeElement!==gastoEl) gastoEl.value=gasto||'';
+  const cac=cerradasTotales>0?(gasto/cerradasTotales):0;
+
+  const rows=[
+    ['Llamadas Totales Agendadas', total],
+    ['Llamadas Calificadas Agendadas', calificadasAgendadas],
+    ['% Llamadas Calificadas', pctCalificadas.toFixed(2)+'%'],
+    ['Llamadas Calificadas Asistidas', calificadasAsistidas],
+    ['Show Up Rate', showUpRate.toFixed(2)+'%'],
+    ['Tasa de Cierre (Sobre Presentadas)', tasaCierre.toFixed(2)+'%'],
+    ['Unidades Cerradas en Seguimiento', cerradasSeguimiento],
+    ['Unidades Cerradas en Persona', cerradasPersona],
+    ['Unidades Cerradas en Llamada', cerradasLlamada],
+    ['Unidades Cerradas Totales', cerradasTotales],
+    ['CAC', gasto>0?('$'+cac.toFixed(0)):'—'],
+    ['AOV Día 1', '$'+aovDia1.toFixed(0)],
+    ['AOV Trato Cerrado', '$'+aovCerrado.toFixed(0)],
+    ['% CC por Venta', pctCC.toFixed(2)+'%'],
+  ];
+
+  document.getElementById('ventas-table-body').innerHTML = rows.map(([label,val])=>`
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:11px 4px;color:var(--text2);">${label}</td>
+      <td style="padding:11px 4px;text-align:right;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent2);">${val}</td>
+    </tr>`).join('');
+}
 function isCerradaPendienteCuota(c){return c.estado==='cerrada' && c.primeraCuotaPagada===false;}
 function marcarFeePerdido(id){
   const c=state.calls.find(x=>x.id===id);if(!c)return;
@@ -1474,6 +1552,8 @@ function updateOverview(){
   if(ncEl) ncEl.textContent=noCalifica;
   const npEl=document.getElementById('stat-no-pitcheo');
   if(npEl) npEl.textContent=noPitcheo;
+  const feeEl=document.getElementById('stat-fee');
+  if(feeEl) feeEl.textContent=calls.filter(c=>isCierreReal(c)&&c.programa==='fee-cuotas').length;
   const feePendEl=document.getElementById('stat-fee-pendiente');
   if(feePendEl) feePendEl.textContent=pendienteCuota;
   const feePerdidos=calls.filter(c=>c.feePerdido);
@@ -1956,6 +2036,41 @@ function renderHotList(){
   `).join('');
 }
 
+function marcarGanadoDesdeHotList(id){
+  const lead=hotLeads.find(l=>l.id===id);if(!lead)return;
+  const contractedStr=prompt('💰 Monto total del cierre (USD):','');
+  if(contractedStr===null)return;
+  const contractedRevenue=Number(contractedStr)||0;
+  if(contractedRevenue<=0){alert('Poné un monto válido mayor a 0.');return;}
+  const cashStr=prompt('💵 Cash Collected ahora (USD) — lo que ya se cobró:', String(contractedRevenue));
+  if(cashStr===null)return;
+  const cashCollected=Number(cashStr)||0;
+  const programaStr=prompt('Programa:\\n1. Fee + Cuotas\\n2. PIF\\n\\nEscribí el número:','1');
+  const programa=programaStr==='2'?'pif':'fee-cuotas';
+  if(!confirm(`Confirmar cierre de ${lead.nombre}\\nMonto: $${contractedRevenue.toLocaleString()}\\nCash Collected: $${cashCollected.toLocaleString()}\\nPrograma: ${programa==='pif'?'PIF':'Fee + Cuotas'}\\n\\n¿Guardar?`))return;
+
+  const newCall={
+    id:Date.now(), closer:lead.closer||'', canalCierre:'seguimiento',
+    nombre:lead.nombre, empresa:lead.empresa||'Invicta', estado:'cerrada', fecha:today(),
+    objecion:lead.objecion||'', programa,
+    cashCollected, contractedRevenue,
+    notas:'Cerrado en seguimiento desde Hot List'+(lead.notas?(' — '+lead.notas):''),
+    primeraCuotaPagada:true, feePerdido:false
+  };
+  state.calls.push(newCall);
+  saveState();
+  saveCall_sb(newCall).catch(e=>console.error('Supabase sync error:',e));
+
+  lead.estado='ganado';
+  saveHotList();
+  saveHotLead_sb(lead).catch(e=>console.error('Supabase sync error:',e));
+
+  closeModal('modal-hot-detail');
+  updateOverview();
+  renderHotList();
+  alert('🎉 ¡Cierre registrado! Ya aparece en Cerradas y en Ventas → Cerradas en Seguimiento.');
+}
+
 function openHotLeadDetail(id){
   const lead=hotLeads.find(l=>l.id===id);if(!lead)return;
   const estadoEmoji={hot:'🔥',tibio:'⚡',frio:'❄️'};
@@ -1963,6 +2078,9 @@ function openHotLeadDetail(id){
   document.getElementById('modal-hot-detail-title').textContent=`${estadoEmoji[lead.estado]||''} ${lead.nombre}${lead.empresa?' · '+lead.empresa:''}`;
   const mensajes=lead.mensajes||[];
   document.getElementById('modal-hot-detail-content').innerHTML=`
+    <div style="margin-bottom:16px;">
+      <button class="btn btn-primary" style="background:var(--green);border-color:var(--green);width:100%;" onclick="marcarGanadoDesdeHotList(${id})">🎉 Marcar como Ganado (cerró en seguimiento)</button>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
       <div style="background:var(--surface2);border-radius:8px;padding:12px;border:1px solid var(--border);">
         <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Último contacto</div>

@@ -208,6 +208,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 
 
+  <!-- SECCIÓN 0.5 — CANAL DE CONTACTO -->
+  <div class="section">
+    <span class="badge">Canal</span>
+    <div class="section-title">¿Cómo fue el contacto?</div>
+    <div class="section-desc">Presencial si fue una reunión cara a cara (ej. festival/evento). Videollamada para el resto.</div>
+    <div class="selector-group cols2">
+      <div class="sel-btn" id="btn-canal-presencial" onclick="select('canalContacto','presencial',this)">
+        <span class="sel-btn-emoji">🏢</span>
+        <div class="sel-btn-title">REUNIÓN PRESENCIAL</div>
+        <div class="sel-btn-sub">Cara a cara</div>
+      </div>
+      <div class="sel-btn" id="btn-canal-video" onclick="select('canalContacto','videollamada',this)">
+        <span class="sel-btn-emoji">📹</span>
+        <div class="sel-btn-title">VIDEOLLAMADA</div>
+        <div class="sel-btn-sub">Zoom / Meet / llamada</div>
+      </div>
+    </div>
+  </div>
+
   <!-- SECCIÓN 1 — TIPO DE LLAMADA -->
   <div class="section">
     <span class="badge">Tipo de llamada</span>
@@ -532,7 +551,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 const SUPABASE_URL = 'https://cxqajwjrnbwyhewlmyfw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_WZKcG9kFyobPlZmJ58hzLw_J3hCWR2b';
 async function sbSaveCall(call){
-  try{await fetch(`${SUPABASE_URL}/rest/v1/calls?on_conflict=id`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:call.id,closer:call.closer||'',nombre:call.nombre,empresa:call.empresa||'',estado:call.estado,fecha:call.fecha,objecion:call.objecion||'',programa:call.programa||'',cash_collected:call.cashCollected||0,contracted_revenue:call.contractedRevenue||0,notas:call.notas||''})});}catch(e){console.error('SB call error:',e);}
+  try{await fetch(`${SUPABASE_URL}/rest/v1/calls?on_conflict=id`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:call.id,closer:call.closer||'',canal_cierre:call.canalCierre||null,nombre:call.nombre,empresa:call.empresa||'',estado:call.estado,fecha:call.fecha,objecion:call.objecion||'',programa:call.programa||'',cash_collected:call.cashCollected||0,contracted_revenue:call.contractedRevenue||0,notas:call.notas||''})});}catch(e){console.error('SB call error:',e);}
 }
 async function sbSaveHotLead(lead){
   try{await fetch(`${SUPABASE_URL}/rest/v1/hot_leads?on_conflict=id`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:lead.id,closer:lead.closer||'',nombre:lead.nombre,empresa:lead.empresa||'',estado:lead.estado,ultimo_contacto:lead.ultimoContacto||'',proximo_followup:lead.proximoFollowup||'',transcript:lead.transcript||'',notas:lead.notas||'',objecion:lead.objecion||'',analisis_call:lead.analisisCall||'',puntuacion:lead.puntuacion||null,mensajes:lead.mensajes||[]})});}catch(e){console.error('SB HL error:',e);}
@@ -558,6 +577,7 @@ const defaultLinks = [
 
 let form = {
   closer: null,
+  canalContacto: null,
   empresa: 'sa-dental', // Invicta es la única empresa en este proyecto
   callType: null,
   callDate: '',
@@ -635,6 +655,7 @@ function saveComisionConfigSS(){
 
 function restoreFormUI() {
   if(form.closer) activateBtn('closer', form.closer);
+  if(form.canalContacto) activateBtn('canalContacto', form.canalContacto);
   if(form.empresa) activateBtn('empresa', form.empresa);
   if(form.callType) activateBtn('callType', form.callType);
   if(form.decisionMaker) activateBtn('decisionMaker', form.decisionMaker);
@@ -660,7 +681,7 @@ function restoreFormUI() {
 }
 
 function activateBtn(field, value) {
-  const map = { initial:'btn-initial', followup:'btn-followup', 'sa-dental':'btn-sa-dental', scaling:'btn-scaling', manuela:'btn-closer-manuela', leandro:'btn-closer-leandro', ariel:'btn-closer-ariel' };
+  const map = { initial:'btn-initial', followup:'btn-followup', 'sa-dental':'btn-sa-dental', scaling:'btn-scaling', manuela:'btn-closer-manuela', leandro:'btn-closer-leandro', ariel:'btn-closer-ariel', presencial:'btn-canal-presencial', videollamada:'btn-canal-video' };
   if(map[value]) { document.getElementById(map[value])?.classList.add('active'); }
 }
 
@@ -876,9 +897,11 @@ function saveCall() {
 
   const fechaCall = form.callDate || new Date().toISOString().slice(0,10);
 
+  const canalCierre = (estado === 'cerrada') ? (form.canalContacto || 'llamada') : null;
   const newCall = {
     id: Date.now(),
     closer: form.closer || '',
+    canalCierre,
     nombre: form.prospectName,
     empresa: empresaLabel,
     estado,
@@ -958,7 +981,7 @@ function saveCall() {
   }
 
   // Reset
-  form = { closer:null, empresa:'sa-dental', callType:null, callDate:'', prospectName:'', prospectEmail:'', prospectPhone:'', puntuacionLead:null, decisionMaker:null, callResult:null, whoCancel:null, noshowType:null, pitched:null, closed:null, noPitchReason:null, programa:null, cashCollected:'', contractedRevenue:'', usaCuotas:false, cantCuotas:'', montoCuota:'', fechaPrimeraCuota:'', objecionCategoria:null, objecionSub:null, objecionMiedoTags:[], objecionMiedoCombo:[], objecionDetalle:'', objecionResumen:'', followUpType:null, followUpNota:'', followUpFecha:'', fathomLink:'', fathomTranscript:'', manualNotes:'' };
+  form = { closer:null, canalContacto:null, empresa:'sa-dental', callType:null, callDate:'', prospectName:'', prospectEmail:'', prospectPhone:'', puntuacionLead:null, decisionMaker:null, callResult:null, whoCancel:null, noshowType:null, pitched:null, closed:null, noPitchReason:null, programa:null, cashCollected:'', contractedRevenue:'', usaCuotas:false, cantCuotas:'', montoCuota:'', fechaPrimeraCuota:'', objecionCategoria:null, objecionSub:null, objecionMiedoTags:[], objecionMiedoCombo:[], objecionDetalle:'', objecionResumen:'', followUpType:null, followUpNota:'', followUpFecha:'', fathomLink:'', fathomTranscript:'', manualNotes:'' };
   saveFormToStorage();
   const badge = document.getElementById('save-badge');
   badge.style.display = 'inline'; badge.textContent = '✓ Guardado en Dashboard'; badge.style.color = 'var(--green)';

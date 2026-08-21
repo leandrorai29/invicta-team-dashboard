@@ -345,13 +345,26 @@ select.input{cursor:pointer;}
 
       <!-- ===== OVERVIEW ===== -->
       <div id="tab-overview" class="tab-content active">
-        <div class="stats-row" style="grid-template-columns:repeat(6,1fr);margin-bottom:16px;">
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
           <div class="stat-card purple"><div class="stat-card-icon">📞</div><div class="stat-label">Calls Totales</div><div class="stat-value purple" id="stat-total">0</div><div class="stat-sub">Este período</div></div>
           <div class="stat-card green"><div class="stat-card-icon">✅</div><div class="stat-label">Cerradas</div><div class="stat-value green" id="stat-cerradas">0</div><div class="stat-sub" id="stat-rate">0% tasa de cierre</div></div>
           <div class="stat-card yellow"><div class="stat-card-icon">🔄</div><div class="stat-label">En Seguimiento</div><div class="stat-value yellow" id="stat-seguimiento">0</div><div class="stat-sub">Pendientes</div></div>
-          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">⏸️</div><div class="stat-label">No se Pitcheó</div><div class="stat-value" style="color:var(--orange)" id="stat-no-pitcheo">0</div><div class="stat-sub">No entra en tasa</div></div>
-          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificada</div><div class="stat-value" style="color:var(--text3)" id="stat-no-califica">0</div><div class="stat-sub">No entra en tasa</div></div>
           <div class="stat-card" style="border-color:rgba(245,158,11,.2);"><div class="stat-card-icon" style="background:var(--surface3);">💼</div><div class="stat-label">Fee (vs PIF)</div><div class="stat-value" style="color:var(--yellow)" id="stat-fee">0</div><div class="stat-sub">Cerradas con Fee + Cuotas</div></div>
+        </div>
+
+        <div class="section" style="margin-bottom:16px;padding:18px 20px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <span style="font-size:14px;">❌</span>
+            <span style="font-size:13px;font-weight:700;color:var(--text);">No Cerrada</span>
+            <span id="stat-no-cerrada-total" style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--red);">0</span>
+            <span style="font-size:11px;color:var(--text3);">total — no entra en la tasa de cierre</span>
+          </div>
+          <div class="stats-row" style="grid-template-columns:repeat(4,1fr);">
+            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">👻</div><div class="stat-label">No Show</div><div class="stat-value" style="color:var(--red)" id="stat-noshow">0</div><div class="stat-sub">No se conectó</div></div>
+            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">📅</div><div class="stat-label">Canceló / Reprogramó</div><div class="stat-value" style="color:var(--orange)" id="stat-cancelada">0</div><div class="stat-sub">Canceló la cita</div></div>
+            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">⏸️</div><div class="stat-label">No se Pitcheó</div><div class="stat-value" style="color:var(--orange)" id="stat-no-pitcheo">0</div><div class="stat-sub">No entra en tasa</div></div>
+            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificada</div><div class="stat-value" style="color:var(--text3)" id="stat-no-califica">0</div><div class="stat-sub">No entra en tasa</div></div>
+          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px;">
@@ -799,7 +812,7 @@ async function loadCalls(){
   const data = await sbFetch('calls','GET',null,'?order=created_at.asc');
   if(!data) return [];
   return data.map(c=>({
-    id:c.id, closer:c.closer||'', canalCierre:c.canal_cierre||'', nombre:c.nombre, empresa:c.empresa||'', estado:c.estado,
+    id:c.id, closer:c.closer||'', canalCierre:c.canal_cierre||'', motivoNoCerrada:c.motivo_no_cerrada||'', nombre:c.nombre, empresa:c.empresa||'', estado:c.estado,
     fecha:c.fecha, objecion:c.objecion||'', programa:c.programa||'',
     cashCollected:c.cash_collected||0, contractedRevenue:c.contracted_revenue||0, notas:c.notas||'',
     primeraCuotaPagada:c.primera_cuota_pagada===false?false:true,
@@ -809,7 +822,7 @@ async function loadCalls(){
 
 async function saveCall_sb(call){
   await sbFetch('calls','POST',{
-    id:call.id, closer:call.closer||'', canal_cierre:call.canalCierre||null, nombre:call.nombre, empresa:call.empresa||'', estado:call.estado,
+    id:call.id, closer:call.closer||'', canal_cierre:call.canalCierre||null, motivo_no_cerrada:call.motivoNoCerrada||null, nombre:call.nombre, empresa:call.empresa||'', estado:call.estado,
     fecha:call.fecha, objecion:call.objecion||'', programa:call.programa||'',
     cash_collected:call.cashCollected||0, contracted_revenue:call.contractedRevenue||0, notas:call.notas||'',
     primera_cuota_pagada:call.primeraCuotaPagada!==false,
@@ -1554,6 +1567,15 @@ function updateOverview(){
   if(npEl) npEl.textContent=noPitcheo;
   const feeEl=document.getElementById('stat-fee');
   if(feeEl) feeEl.textContent=calls.filter(c=>isCierreReal(c)&&c.programa==='fee-cuotas').length;
+  const noShow=calls.filter(c=>c.estado==='no-cerrada'&&c.motivoNoCerrada==='noshow').length;
+  const cancelada=calls.filter(c=>c.estado==='no-cerrada'&&c.motivoNoCerrada==='cancelada').length;
+  const sinDistinguir=calls.filter(c=>c.estado==='no-cerrada'&&!c.motivoNoCerrada).length;
+  const noshowEl=document.getElementById('stat-noshow');
+  if(noshowEl) noshowEl.textContent=noShow+sinDistinguir;
+  const cancEl=document.getElementById('stat-cancelada');
+  if(cancEl) cancEl.textContent=cancelada;
+  const noCerradaTotalEl=document.getElementById('stat-no-cerrada-total');
+  if(noCerradaTotalEl) noCerradaTotalEl.textContent=(noShow+cancelada+sinDistinguir+noCalifica+noPitcheo);
   const feePendEl=document.getElementById('stat-fee-pendiente');
   if(feePendEl) feePendEl.textContent=pendienteCuota;
   const feePerdidos=calls.filter(c=>c.feePerdido);

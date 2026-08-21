@@ -2287,7 +2287,7 @@ function deleteMensaje(leadId,idx){
 
 // ===== PERFORMANCE =====
 function updatePerformance(){
-  const closerCalls=closerFilter==='todos'?closerCalls:closerCalls.filter(c=>c.closer===closerFilter);
+  const closerCalls=closerFilter==='todos'?state.calls:state.calls.filter(c=>c.closer===closerFilter);
   const m=getMonthRange();
   const callsMes=closerCalls.filter(c=>c.fecha>=m.start&&c.fecha<=m.end);
   const totalMes=callsMes.length;

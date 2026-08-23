@@ -65,6 +65,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* STAT CARDS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+
+/* ===== VENTAS — HEADLINE CARDS ===== */
+.headline-card{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:16px;padding:22px;position:relative;overflow:hidden;}
+.headline-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:16px;}
+.headline-label .dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.ring-wrap{width:130px;height:130px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;position:relative;}
+.ring-inner{width:106px;height:106px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-pct{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;}
+.headline-delta{font-size:12px;font-weight:700;text-align:center;margin-top:2px;}
+.headline-delta.up{color:var(--green);}
+.headline-delta.down{color:var(--red);}
+.headline-delta.flat{color:var(--text3);}
+.big-number{font-size:36px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;margin-bottom:6px;}
+.spark-wrap{margin-top:10px;height:36px;}
+.spark-wrap svg{width:100%;height:100%;display:block;}
+.mini-tile{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center;}
+.mini-tile-label{font-size:10.5px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;line-height:1.3;min-height:26px;display:flex;align-items:center;justify-content:center;}
+.mini-tile-value{font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent2);}
+
 .stat-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
 .stat-card::after{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;filter:blur(30px);opacity:.4;}
 .stat-card.purple::after{background:var(--accent);}
@@ -257,6 +276,8 @@ select.input{cursor:pointer;}
 }
 
 @media (max-width:640px){
+  #ventas-tiles{grid-template-columns:repeat(2,1fr) !important;gap:10px !important;}
+  #ventas-headline-row{grid-template-columns:1fr 1fr !important;}
   .top-nav{padding:0 12px;}
   .top-nav-link{padding:0 10px;font-size:10px;}
   .logo-title{font-size:14px;}
@@ -507,10 +528,11 @@ select.input{cursor:pointer;}
         <div class="section-header" style="margin-bottom:20px;">
           <div style="font-size:17px;font-weight:700;">🎯 Métricas de Ventas</div>
         </div>
-        <div class="section" style="max-width:520px;">
-          <table style="width:100%;border-collapse:collapse;">
-            <tbody id="ventas-table-body" style="font-size:13px;"></tbody>
-          </table>
+
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;" id="ventas-headline-row"></div>
+
+        <div class="section" style="max-width:1080px;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;" id="ventas-tiles"></div>
         </div>
         <div class="section" style="max-width:520px;">
           <div class="input-label">💸 Gasto en marketing del período (para CAC)</div>
@@ -1286,7 +1308,126 @@ function saveGastoMarketing(val){
   renderVentas();
 }
 
+function getVentasRanges(){
+  const fmt=d=>d.toISOString().slice(0,10);
+  const now=new Date();
+  if(state.filter==='dia'){
+    const y=new Date(now);y.setDate(y.getDate()-1);
+    return {cur:{start:fmt(now),end:fmt(now)}, prev:{start:fmt(y),end:fmt(y)}, hasPrev:true};
+  }
+  if(state.filter==='semana'){
+    return {cur:getWeekRange(0), prev:getWeekRange(-1), hasPrev:true};
+  }
+  if(state.filter==='mes'){
+    const start=new Date(now.getFullYear(),now.getMonth(),1);
+    const end=new Date(now.getFullYear(),now.getMonth()+1,0);
+    const pStart=new Date(now.getFullYear(),now.getMonth()-1,1);
+    const pEnd=new Date(now.getFullYear(),now.getMonth(),0);
+    return {cur:{start:fmt(start),end:fmt(end)}, prev:{start:fmt(pStart),end:fmt(pEnd)}, hasPrev:true};
+  }
+  return {cur:null, prev:null, hasPrev:false};
+}
+
+function calcVentasCore(calls){
+  const total=calls.length;
+  const noCalifica=calls.filter(c=>c.estado==='no-califica').length;
+  const calificadasAgendadas=total-noCalifica;
+  const calificadasAsistidas=calls.filter(c=>c.estado!=='no-cerrada'&&c.estado!=='agendada'&&c.estado!=='no-califica').length;
+  const showUpRate=calificadasAgendadas>0?(calificadasAsistidas/calificadasAgendadas*100):0;
+  const cerradas=calls.filter(isCierreReal);
+  const tasaCierre=calificadasAgendadas>0?(cerradas.length/calificadasAgendadas*100):0;
+  const sumCash=cerradas.reduce((s,c)=>s+(Number(c.cashCollected)||0),0);
+  const sumContracted=cerradas.reduce((s,c)=>s+(Number(c.contractedRevenue)||0),0);
+  const aovCerrado=cerradas.length>0?(sumContracted/cerradas.length):0;
+  return {total,calificadasAgendadas,calificadasAsistidas,showUpRate,cerradas,tasaCierre,sumCash,sumContracted,aovCerrado};
+}
+
+function dailySeries(calls,valueFn,days=10){
+  const out=[];
+  for(let i=days-1;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    out.push(calls.filter(c=>c.fecha===key).reduce((s,c)=>s+valueFn(c),0));
+  }
+  return out;
+}
+
+function sparkSvg(points,color){
+  if(!points||points.length<2) return '';
+  const max=Math.max(...points,1);
+  const w=100,h=32,step=w/(points.length-1);
+  const path=points.map((v,i)=>{
+    const x=i*step;
+    const y=h-((v/max))*h*0.85-2;
+    return `${i===0?'M':'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="${path}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function deltaHtml(curVal,prevVal,hasPrev,isPts){
+  if(!hasPrev) return `<div class="headline-delta flat">Sin comparación (elegí Hoy/Semana/Mes)</div>`;
+  if(prevVal===0 && curVal===0) return `<div class="headline-delta flat">Sin datos en el período anterior</div>`;
+  let diff,label;
+  if(isPts){
+    diff=curVal-prevVal;
+    label=(diff>=0?'+':'')+diff.toFixed(1)+' pts';
+  }else{
+    diff=prevVal===0?100:((curVal-prevVal)/Math.abs(prevVal)*100);
+    label=(diff>=0?'+':'')+diff.toFixed(1)+'%';
+  }
+  const cls=diff>0?'up':diff<0?'down':'flat';
+  const arrow=diff>0?'↗':diff<0?'↘':'→';
+  return `<div class="headline-delta ${cls}">${arrow} ${label} vs período anterior</div>`;
+}
+
+function ringCard(label,icon,pct,color,delta,spark){
+  const angle=Math.min(Math.max(pct,0),100)*3.6;
+  return `<div class="headline-card">
+    <div class="headline-label">${icon} ${label}</div>
+    <div class="ring-wrap" style="background:conic-gradient(${color} ${angle}deg, var(--surface3) 0deg)">
+      <div class="ring-inner"><div class="ring-pct" style="color:${color}">${pct.toFixed(0)}%</div></div>
+    </div>
+    ${delta||''}
+    ${spark?`<div class="spark-wrap">${sparkSvg(spark,color)}</div>`:''}
+  </div>`;
+}
+
+function bigNumberCard(label,icon,value,color,delta,spark){
+  return `<div class="headline-card">
+    <div class="headline-label">${icon} ${label}</div>
+    <div class="big-number" style="color:${color}">${value}</div>
+    ${delta||''}
+    ${spark?`<div class="spark-wrap">${sparkSvg(spark,color)}</div>`:''}
+  </div>`;
+}
+
 function renderVentas(){
+  const baseCalls=closerFilter==='todos'?state.calls:state.calls.filter(c=>c.closer===closerFilter);
+  const {cur,prev,hasPrev}=getVentasRanges();
+
+  const inRange=(r)=>r?baseCalls.filter(c=>c.fecha>=r.start&&c.fecha<=r.end):baseCalls;
+  const curCalls=inRange(cur);
+  const prevCalls=hasPrev?inRange(prev):[];
+
+  const m=calcVentasCore(curCalls);
+  const mPrev=hasPrev?calcVentasCore(prevCalls):null;
+
+  const sparkDays=14;
+  const sparkShow=dailySeries(baseCalls,c=>c.estado!=='no-cerrada'&&c.estado!=='agendada'&&c.estado!=='no-califica'?1:0,sparkDays);
+  const sparkCerradas=dailySeries(baseCalls,c=>isCierreReal(c)?1:0,sparkDays);
+  const sparkCash=dailySeries(baseCalls,c=>isCierreReal(c)?(Number(c.cashCollected)||0):0,sparkDays);
+  const sparkContracted=dailySeries(baseCalls,c=>isCierreReal(c)?(Number(c.contractedRevenue)||0):0,sparkDays);
+
+  document.getElementById('ventas-headline-row').innerHTML =
+    ringCard('Show Up Rate','📞', m.showUpRate, '#7c6cf6',
+      deltaHtml(m.showUpRate, mPrev?mPrev.showUpRate:0, hasPrev, true), sparkShow) +
+    ringCard('Tasa de Cierre','🎯', m.tasaCierre, '#22d3ee',
+      deltaHtml(m.tasaCierre, mPrev?mPrev.tasaCierre:0, hasPrev, true), sparkCerradas) +
+    bigNumberCard('Cash Collected','💰', '$'+m.sumCash.toLocaleString(), 'var(--green)',
+      deltaHtml(m.sumCash, mPrev?mPrev.sumCash:0, hasPrev, false), sparkCash) +
+    bigNumberCard('AOV Trato Cerrado','📊', '$'+m.aovCerrado.toFixed(0).toLocaleString(), 'var(--yellow)',
+      deltaHtml(m.aovCerrado, mPrev?mPrev.aovCerrado:0, hasPrev, false), sparkContracted);
+
   const calls=filterCalls();
   const total=calls.length;
   const noCalifica=calls.filter(c=>c.estado==='no-califica').length;
@@ -1294,15 +1435,12 @@ function renderVentas(){
   const pctCalificadas=total>0?(calificadasAgendadas/total*100):0;
   const calificadasAsistidas=calls.filter(c=>c.estado!=='no-cerrada'&&c.estado!=='agendada'&&c.estado!=='no-califica').length;
   const showUpRate=calificadasAgendadas>0?(calificadasAsistidas/calificadasAgendadas*100):0;
-
   const cerradas=calls.filter(isCierreReal);
   const cerradasTotales=cerradas.length;
   const tasaCierre=calificadasAgendadas>0?(cerradasTotales/calificadasAgendadas*100):0;
-
   const cerradasLlamada=cerradas.filter(c=>c.canalCierre==='llamada'||!c.canalCierre).length;
   const cerradasPersona=cerradas.filter(c=>c.canalCierre==='presencial').length;
   const cerradasSeguimiento=cerradas.filter(c=>c.canalCierre==='seguimiento').length;
-
   const sumCash=cerradas.reduce((s,c)=>s+(Number(c.cashCollected)||0),0);
   const sumContracted=cerradas.reduce((s,c)=>s+(Number(c.contractedRevenue)||0),0);
   const aovDia1=cerradasTotales>0?(sumCash/cerradasTotales):0;
@@ -1332,11 +1470,21 @@ function renderVentas(){
     ['% CC por Venta', pctCC.toFixed(2)+'%'],
   ];
 
-  document.getElementById('ventas-table-body').innerHTML = rows.map(([label,val])=>`
-    <tr style="border-bottom:1px solid var(--border);">
-      <td style="padding:11px 4px;color:var(--text2);">${label}</td>
-      <td style="padding:11px 4px;text-align:right;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent2);">${val}</td>
-    </tr>`).join('');
+  const restColors=['#7c6cf6','#22d3ee','#f472b6','var(--green)','#7c6cf6','#f59e0b','#22d3ee','var(--green)','#f472b6','#22d3ee'];
+  const restCards=[
+    bigNumberCard('Llamadas Totales Agendadas','📞', total, restColors[0]),
+    bigNumberCard('Llamadas Calificadas Agendadas','✅', calificadasAgendadas, restColors[1]),
+    ringCard('% Llamadas Calificadas','🎯', pctCalificadas, restColors[2]),
+    bigNumberCard('Llamadas Calificadas Asistidas','🙋', calificadasAsistidas, restColors[3]),
+    bigNumberCard('Cerradas en Seguimiento','🔥', cerradasSeguimiento, restColors[4]),
+    bigNumberCard('Cerradas en Persona','🏢', cerradasPersona, restColors[5]),
+    bigNumberCard('Cerradas en Llamada','📹', cerradasLlamada, restColors[6]),
+    bigNumberCard('Cerradas Totales','🏆', cerradasTotales, restColors[7]),
+    bigNumberCard('CAC', '💸', gasto>0?('$'+cac.toFixed(0)):'—', restColors[8]),
+    bigNumberCard('AOV Día 1','💵', '$'+aovDia1.toFixed(0), restColors[9]),
+    ringCard('% CC por Venta','💰', pctCC, '#22d3ee'),
+  ];
+  document.getElementById('ventas-tiles').innerHTML = restCards.join('');
 }
 function isCerradaPendienteCuota(c){return c.estado==='cerrada' && c.primeraCuotaPagada===false;}
 function marcarFeePerdido(id){

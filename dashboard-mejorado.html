@@ -516,8 +516,8 @@ select.input{cursor:pointer;}
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Fecha</th><th>Lead</th><th>Agencia</th><th>Estado</th><th>Objeción</th><th>Programa</th><th>Cash</th><th></th></tr></thead>
-              <tbody id="calls-table-body"><tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">Sin calls registradas aún</td></tr></tbody>
+              <thead><tr><th>Fecha</th><th>Lead</th><th>Closer</th><th>Agencia</th><th>Estado</th><th>Objeción</th><th>Programa</th><th>Cash</th><th></th></tr></thead>
+              <tbody id="calls-table-body"><tr><td colspan="9" style="text-align:center;color:var(--text3);padding:30px">Sin calls registradas aún</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1793,11 +1793,12 @@ function updateOverview(){
   }
 
   const tbody=document.getElementById('calls-table-body');
-  if(calls.length===0){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">Sin calls en este período</td></tr>';return;}
+  if(calls.length===0){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:30px">Sin calls en este período</td></tr>';return;}
   const mesesNombres={'01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio','07':'Julio','08':'Agosto','09':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'};
   function renderCallRow(c){return `<tr>
     <td style="font-family:'DM Mono';font-size:12px;color:var(--text2)">${c.fecha}</td>
     <td style="font-weight:500">${c.nombre}</td>
+    <td>${c.closer?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(124,108,246,.12);color:#a78bfa;font-weight:600;">${c.closer.charAt(0).toUpperCase()+c.closer.slice(1)}</span>`:'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
     <td>${isInvictaCall(c)?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(56,189,248,.12);color:#38bdf8;font-weight:600;">'+INVICTA_LOGO_SVG+' Invicta</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
     <td><span class="badge badge-${c.estado}">${c.feePerdido?'💸 Fee perdido (no pagó cuota)':(c.estado==='cerrada'&&!c.primeraCuotaPagada?'⏳ Fee pagado (sin 1ra cuota)':estadoLabel(c.estado))}</span></td>
     <td style="color:var(--text2);font-size:12px">${c.objecion||'—'}</td>
@@ -1829,7 +1830,7 @@ function updateOverview(){
       });
       const objStr=Object.entries(objMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k} ${v}x`).join(' · ')||'—';
       return `<tr style="background:var(--surface2);border-top:2px solid var(--border2);">
-        <td colspan="8" style="padding:12px 14px;">
+        <td colspan="9" style="padding:12px 14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
             <div style="font-weight:700;font-size:13px;color:var(--text);">${mesesNombres[month]||month} ${year}</div>
             <div style="display:flex;gap:16px;font-size:11px;flex-wrap:wrap;">

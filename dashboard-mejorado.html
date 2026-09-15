@@ -366,26 +366,17 @@ select.input{cursor:pointer;}
 
       <!-- ===== OVERVIEW ===== -->
       <div id="tab-overview" class="tab-content active">
-        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
           <div class="stat-card purple"><div class="stat-card-icon">📞</div><div class="stat-label">Calls Totales</div><div class="stat-value purple" id="stat-total">0</div><div class="stat-sub">Este período</div></div>
           <div class="stat-card green"><div class="stat-card-icon">✅</div><div class="stat-label">Cerradas</div><div class="stat-value green" id="stat-cerradas">0</div><div class="stat-sub" id="stat-rate">0% tasa de cierre</div></div>
           <div class="stat-card yellow"><div class="stat-card-icon">🔄</div><div class="stat-label">En Seguimiento</div><div class="stat-value yellow" id="stat-seguimiento">0</div><div class="stat-sub">Pendientes</div></div>
           <div class="stat-card" style="border-color:rgba(245,158,11,.2);"><div class="stat-card-icon" style="background:var(--surface3);">💼</div><div class="stat-label">Fee (vs PIF)</div><div class="stat-value" style="color:var(--yellow)" id="stat-fee">0</div><div class="stat-sub">Cerradas con Fee + Cuotas</div></div>
         </div>
-
-        <div class="section" style="margin-bottom:16px;padding:18px 20px;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-            <span style="font-size:14px;">❌</span>
-            <span style="font-size:13px;font-weight:700;color:var(--text);">No Cerrada</span>
-            <span id="stat-no-cerrada-total" style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--red);">0</span>
-            <span style="font-size:11px;color:var(--text3);">total — no entra en la tasa de cierre</span>
-          </div>
-          <div class="stats-row" style="grid-template-columns:repeat(4,1fr);">
-            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">👻</div><div class="stat-label">No Show</div><div class="stat-value" style="color:var(--red)" id="stat-noshow">0</div><div class="stat-sub">No se conectó</div></div>
-            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">📅</div><div class="stat-label">Canceló / Reprogramó</div><div class="stat-value" style="color:var(--orange)" id="stat-cancelada">0</div><div class="stat-sub">Canceló la cita</div></div>
-            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">⏸️</div><div class="stat-label">No se Pitcheó</div><div class="stat-value" style="color:var(--orange)" id="stat-no-pitcheo">0</div><div class="stat-sub">No entra en tasa</div></div>
-            <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificada</div><div class="stat-value" style="color:var(--text3)" id="stat-no-califica">0</div><div class="stat-sub">No entra en tasa</div></div>
-          </div>
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">👻</div><div class="stat-label">No Show</div><div class="stat-value" style="color:var(--red)" id="stat-noshow">0</div><div class="stat-sub">No entra en tasa</div></div>
+          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">📅</div><div class="stat-label">Canceló / Reprogramó</div><div class="stat-value" style="color:var(--orange)" id="stat-cancelada">0</div><div class="stat-sub">No entra en tasa</div></div>
+          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">⏸️</div><div class="stat-label">No se Pitcheó</div><div class="stat-value" style="color:var(--orange)" id="stat-no-pitcheo">0</div><div class="stat-sub">No entra en tasa</div></div>
+          <div class="stat-card" style="border-color:var(--border2);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificada</div><div class="stat-value" style="color:var(--text3)" id="stat-no-califica">0</div><div class="stat-sub">No entra en tasa</div></div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px;">
@@ -1574,6 +1565,14 @@ function setFilter(f,btn){
   renderMetasProgress();
 }
 function estadoLabel(e){return{cerrada:'✅ Cerrada','no-cerrada':'❌ No cerrada',seguimiento:'🔄 Seguimiento',agendada:'📅 Re-agendada','no-califica':'🚫 No calificaba','no-pitcheo':'⏸️ No se pitcheó','cuota-cobrada':'💳 Cuota cobrada'}[e]||e;}
+function estadoLabelCall(c){
+  if(c.estado==='no-cerrada'){
+    if(c.motivoNoCerrada==='noshow') return '👻 No Show';
+    if(c.motivoNoCerrada==='cancelada') return '📅 Canceló/Reprogramó';
+    return '❌ No cerrada';
+  }
+  return estadoLabel(c.estado);
+}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
@@ -1800,8 +1799,8 @@ function updateOverview(){
     <td style="font-weight:500">${c.nombre}</td>
     <td>${c.closer?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(124,108,246,.12);color:#a78bfa;font-weight:600;">${c.closer.charAt(0).toUpperCase()+c.closer.slice(1)}</span>`:'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
     <td>${isInvictaCall(c)?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(56,189,248,.12);color:#38bdf8;font-weight:600;">'+INVICTA_LOGO_SVG+' Invicta</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
-    <td>${c.tipoProspecto==='desarrolladora'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.12);color:var(--yellow);font-weight:600;">🏗️ Desarrolladora</span>':c.tipoProspecto==='inmobiliaria'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.12);color:var(--green);font-weight:600;">🏠 Inmobiliaria</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
-    <td><span class="badge badge-${c.estado}">${c.feePerdido?'💸 Fee perdido (no pagó cuota)':(c.estado==='cerrada'&&!c.primeraCuotaPagada?'⏳ Fee pagado (sin 1ra cuota)':estadoLabel(c.estado))}</span></td>
+    <td>${c.tipoProspecto==='desarrolladora'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.12);color:var(--yellow);font-weight:600;">🏗️ Desarrolladora</span>':c.tipoProspecto==='inmobiliaria'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.12);color:var(--green);font-weight:600;">🏠 Inmobiliaria</span>':c.tipoProspecto==='asesor'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(148,163,184,.12);color:var(--text3);font-weight:600;">🧑‍💼 Asesor</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
+    <td><span class="badge badge-${c.estado}">${c.feePerdido?'💸 Fee perdido (no pagó cuota)':(c.estado==='cerrada'&&!c.primeraCuotaPagada?'⏳ Fee pagado (sin 1ra cuota)':estadoLabelCall(c))}</span></td>
     <td style="color:var(--text2);font-size:12px">${c.objecion||'—'}</td>
     <td style="color:var(--text2);font-size:12px">${c.programa||'—'}</td>
     <td style="font-family:'DM Mono';font-size:12px;color:var(--green)">${c.cashCollected?'$'+c.cashCollected.toLocaleString():'—'}</td>

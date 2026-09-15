@@ -330,7 +330,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="sel-btn" id="btn-calif-no" onclick="selectCalifica('no',this)"><span class="sel-btn-emoji">🚫</span><div class="sel-btn-title">NO</div><div class="sel-btn-sub">No califica (ej. Asesor)</div></div>
     </div>
 
-    <div id="post-llamada-resto" class="hidden">
+    <div id="post-llamada-resto">
     <hr class="section-divider">
     <!-- 2. ¿Qué pasó con la cita? -->
     <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;">2. ¿Qué pasó con la cita?</div>
@@ -695,7 +695,6 @@ function restoreFormUI() {
   if(form.calificaba) {
     const btnId = form.calificaba === 'si' ? 'btn-calif-si' : 'btn-calif-no';
     document.getElementById(btnId)?.classList.add('active');
-    if(form.calificaba === 'si') document.getElementById('post-llamada-resto').classList.remove('hidden');
   }
   if(form.callResult) {
     activateBtn('callResult', form.callResult);
@@ -735,9 +734,6 @@ function selectCalifica(value, el) {
   form.calificaba = value;
   document.querySelectorAll('#btn-calif-si,#btn-calif-no').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  const resto = document.getElementById('post-llamada-resto');
-  if(value === 'si') { resto.classList.remove('hidden'); }
-  else { resto.classList.add('hidden'); }
   saveFormToStorage();
   updateWizard();
 }
@@ -871,7 +867,6 @@ function isWizardComplete() {
   if(!form.prospectName.trim()) return false;
   if(!form.decisionMaker) return false;
   if(!form.calificaba) return false;
-  if(form.calificaba === 'no') return true;
   if(!form.callResult) return false;
   if(form.callResult === 'cancelled' && !form.whoCancel) return false;
   if(form.callResult === 'noshow' && !form.noshowType) return false;

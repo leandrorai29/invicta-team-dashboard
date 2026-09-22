@@ -1037,6 +1037,7 @@ async function marcarCuotaPagada(id){
   const linkedCallId=Date.now()+Math.floor(Math.random()*1000);
   dashCalls.push({
     id: linkedCallId,
+    closer: cuota.closer||'',
     nombre: cuota.nombreCliente,
     empresa: cuota.empresa,
     estado: 'cuota-cobrada',
@@ -1051,6 +1052,7 @@ async function marcarCuotaPagada(id){
   saveCuotasLocal();
   await saveCuota_sb(cuota).catch(e=>console.error('Supabase cuota sync:',e));
   saveState();
+  await saveCall_sb(dashCalls[dashCalls.length-1]).catch(e=>console.error('Supabase cobro-call sync:',e));
   renderCuotas();
   updateOverview();
 }

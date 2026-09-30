@@ -525,6 +525,25 @@ select.input{cursor:pointer;}
         <div class="section" style="max-width:1080px;">
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;" id="ventas-tiles"></div>
         </div>
+
+        <div class="section" style="max-width:1080px;">
+          <div class="section-title" style="margin-bottom:14px;">📊 Calificadas / Descalificadas por Tipo de Prospecto</div>
+          <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Tipo</th>
+                <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Llamadas</th>
+                <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Calificadas</th>
+                <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Descalificadas</th>
+                <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Cerradas</th>
+                <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">% Cierre</th>
+              </tr>
+            </thead>
+            <tbody id="ventas-tipo-prospecto-body"></tbody>
+          </table>
+          </div>
+        </div>
         <div class="section" style="max-width:520px;">
           <div class="input-label">💸 Gasto en marketing del período (para CAC)</div>
           <input class="input" id="ventas-gasto-marketing" type="text" placeholder="0" style="max-width:220px;" oninput="saveGastoMarketing(this.value)">
@@ -1478,6 +1497,30 @@ function renderVentas(){
     ringCard('% CC por Venta','💰', pctCC, '#22d3ee'),
   ];
   document.getElementById('ventas-tiles').innerHTML = restCards.join('');
+
+  const tipos = [
+    ['desarrolladora', '🏗️ Desarrolladora'],
+    ['inmobiliaria', '🏠 Inmobiliaria'],
+    ['asesor', '🧑‍💼 Asesor'],
+    ['', '❓ Sin especificar'],
+  ];
+  document.getElementById('ventas-tipo-prospecto-body').innerHTML = tipos.map(([key,label])=>{
+    const subset = calls.filter(c => (c.tipoProspecto||'') === key);
+    const subTotal = subset.length;
+    const subNoCalifica = subset.filter(c=>c.estado==='no-califica').length;
+    const subCalificadas = subTotal - subNoCalifica;
+    const subCerradas = subset.filter(isCierreReal).length;
+    const subTasa = subCalificadas>0 ? (subCerradas/subCalificadas*100) : 0;
+    if(subTotal === 0) return '';
+    return `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:9px 6px;">${label}</td>
+      <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;">${subTotal}</td>
+      <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--green);">${subCalificadas}</td>
+      <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--text3);">${subNoCalifica}</td>
+      <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--accent2);">${subCerradas}</td>
+      <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;">${subTasa.toFixed(1)}%</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--text3);">Sin datos en este período</td></tr>';
 }
 function isCerradaPendienteCuota(c){return c.estado==='cerrada' && c.primeraCuotaPagada===false;}
 function marcarFeePerdido(id){

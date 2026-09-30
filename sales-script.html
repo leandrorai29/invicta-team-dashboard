@@ -185,15 +185,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <span class="badge">Empezá acá</span>
     <div class="section-title">¿Quién toma la llamada?</div>
     <div class="section-desc">Elegí tu nombre antes de arrancar — así el Dashboard puede filtrar por closer.</div>
-    <div class="selector-group" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="selector-group" style="grid-template-columns:1fr 1fr;">
       <div class="sel-btn" id="btn-closer-manuela" onclick="select('closer','manuela',this)">
         <div class="sel-btn-title">MANUELA</div>
       </div>
       <div class="sel-btn" id="btn-closer-leandro" onclick="select('closer','leandro',this)">
         <div class="sel-btn-title">LEANDRO</div>
-      </div>
-      <div class="sel-btn" id="btn-closer-ariel" onclick="select('closer','ariel',this)">
-        <div class="sel-btn-title">ARIEL</div>
       </div>
     </div>
   </div>
@@ -283,7 +280,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <!-- Tipo de Prospecto -->
     <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px;">Tipo de Prospecto</div>
-      <div class="selector-group" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="selector-group" style="grid-template-columns:1fr 1fr 1fr 1fr;">
         <div class="sel-btn" id="btn-tipo-desarrolladora" onclick="select('tipoProspecto','desarrolladora',this)">
           <span class="sel-btn-emoji">🏗️</span>
           <div class="sel-btn-title">DESARROLLADORA</div>
@@ -291,6 +288,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
         <div class="sel-btn" id="btn-tipo-inmobiliaria" onclick="select('tipoProspecto','inmobiliaria',this)">
           <span class="sel-btn-emoji">🏠</span>
           <div class="sel-btn-title">INMOBILIARIA</div>
+        </div>
+        <div class="sel-btn" id="btn-tipo-particular" onclick="select('tipoProspecto','particular',this)">
+          <span class="sel-btn-emoji">🙋</span>
+          <div class="sel-btn-title">PARTICULAR</div>
         </div>
         <div class="sel-btn" id="btn-tipo-asesor" onclick="selectTipoProspecto('asesor',this)">
           <span class="sel-btn-emoji">🧑‍💼</span>
@@ -718,7 +719,7 @@ function restoreFormUI() {
 }
 
 function activateBtn(field, value) {
-  const map = { initial:'btn-initial', followup:'btn-followup', 'sa-dental':'btn-sa-dental', scaling:'btn-scaling', manuela:'btn-closer-manuela', leandro:'btn-closer-leandro', ariel:'btn-closer-ariel', presencial:'btn-canal-presencial', videollamada:'btn-canal-video', desarrolladora:'btn-tipo-desarrolladora', inmobiliaria:'btn-tipo-inmobiliaria', asesor:'btn-tipo-asesor' };
+  const map = { initial:'btn-initial', followup:'btn-followup', 'sa-dental':'btn-sa-dental', scaling:'btn-scaling', manuela:'btn-closer-manuela', leandro:'btn-closer-leandro', presencial:'btn-canal-presencial', videollamada:'btn-canal-video', desarrolladora:'btn-tipo-desarrolladora', inmobiliaria:'btn-tipo-inmobiliaria', asesor:'btn-tipo-asesor', particular:'btn-tipo-particular' };
   if(map[value]) { document.getElementById(map[value])?.classList.add('active'); }
 }
 
@@ -740,7 +741,7 @@ function selectCalifica(value, el) {
 
 function selectTipoProspecto(value, el) {
   form.tipoProspecto = value;
-  document.querySelectorAll('#btn-tipo-desarrolladora,#btn-tipo-inmobiliaria,#btn-tipo-asesor').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#btn-tipo-desarrolladora,#btn-tipo-inmobiliaria,#btn-tipo-particular,#btn-tipo-asesor').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   if(value === 'asesor') {
     const btnNo = document.getElementById('btn-calif-no');

@@ -334,14 +334,9 @@ select.input{cursor:pointer;}
       <div class="page-title" id="pageTitle">Dashboard</div>
       <div style="display:flex;gap:10px;align-items:center">
         <div class="filter-group">
-          <button class="filter-btn active" id="ag-filter-todas" onclick="setAgencia('todas',this)">Todas</button>
-          <button class="filter-btn" id="ag-filter-dental" onclick="setAgencia('SA Dental',this)"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:2px;" xmlns="http://www.w3.org/2000/svg"><path d="M4 21V13M8.5 21V9M13 21V4.5L15.5 7M18 21V10.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Invicta</button>
-        </div>
-        <div class="filter-group">
           <button class="filter-btn active" id="cl-filter-todos" onclick="setCloser('todos',this)">Closers</button>
           <button class="filter-btn" id="cl-filter-manuela" onclick="setCloser('manuela',this)">Manuela</button>
           <button class="filter-btn" id="cl-filter-leandro" onclick="setCloser('leandro',this)">Leandro</button>
-          <button class="filter-btn" id="cl-filter-ariel" onclick="setCloser('ariel',this)">Ariel</button>
         </div>
         <input type="text" id="lead-search-input" placeholder="🔍 Buscar lead..." oninput="setLeadSearch(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;padding:6px 10px;width:150px;font-family:'Inter',sans-serif;">
         <div class="filter-group">
@@ -366,6 +361,10 @@ select.input{cursor:pointer;}
 
       <!-- ===== OVERVIEW ===== -->
       <div id="tab-overview" class="tab-content active">
+        <div class="stats-row" style="grid-template-columns:repeat(2,1fr);margin-bottom:12px;">
+          <div class="stat-card" style="border-color:rgba(16,185,129,.25);"><div class="stat-card-icon" style="background:var(--surface3);">🎯</div><div class="stat-label">Calificadas este período</div><div class="stat-value" style="color:var(--green)" id="stat-calificadas">0</div><div class="stat-sub">Cuentan para la tasa</div></div>
+          <div class="stat-card" style="border-color:rgba(148,163,184,.25);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificadas este período</div><div class="stat-value" style="color:var(--text3)" id="stat-descalificadas-total">0</div><div class="stat-sub">No cuentan para la tasa</div></div>
+        </div>
         <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
           <div class="stat-card purple"><div class="stat-card-icon">📞</div><div class="stat-label">Calls Totales</div><div class="stat-value purple" id="stat-total">0</div><div class="stat-sub">Este período</div></div>
           <div class="stat-card green"><div class="stat-card-icon">✅</div><div class="stat-label">Cerradas</div><div class="stat-value green" id="stat-cerradas">0</div><div class="stat-sub" id="stat-rate">0% tasa de cierre</div></div>
@@ -395,7 +394,6 @@ select.input{cursor:pointer;}
             <button class="filter-btn active" id="meta-closer-grupal" onclick="setMetaCloser('grupal',this)">👥 Grupal</button>
             <button class="filter-btn" id="meta-closer-manuela" onclick="setMetaCloser('manuela',this)">Manuela</button>
             <button class="filter-btn" id="meta-closer-leandro" onclick="setMetaCloser('leandro',this)">Leandro</button>
-            <button class="filter-btn" id="meta-closer-ariel" onclick="setMetaCloser('ariel',this)">Ariel</button>
           </div>
         </div>
         <div class="two-col">
@@ -444,11 +442,7 @@ select.input{cursor:pointer;}
           <div class="section">
             <div class="section-header" style="margin-bottom:16px;">
               <div class="section-title">💰 Ingresos del Mes <span id="ingresos-closer-tag" style="font-size:11px;font-weight:600;color:var(--accent2);"></span></div>
-              <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);padding:2px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);">
-                <button onclick="navIngresosMes(-1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;">‹</button>
-                <span class="section-badge" id="ingresos-mes-label" style="min-width:110px;text-align:center;"></span>
-                <button id="ingresos-mes-next" onclick="navIngresosMes(1)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;" disabled>›</button>
-              </div>
+              <span class="section-badge" id="ingresos-mes-label" style="min-width:110px;text-align:center;"></span>
             </div>
             <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
               <div style="font-size:36px;font-weight:800;font-family:'DM Mono';color:var(--green)" id="ingresos-actuales">$0</div>
@@ -527,7 +521,13 @@ select.input{cursor:pointer;}
         </div>
 
         <div class="section" style="max-width:1080px;">
-          <div class="section-title" style="margin-bottom:14px;">📊 Calificadas / Descalificadas por Tipo de Prospecto</div>
+          <div class="section-title" style="margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <span>📊 Calificadas / Descalificadas por Tipo de Prospecto</span>
+            <span style="font-size:12px;font-weight:400;color:var(--text2);display:flex;align-items:center;gap:6px;">
+              Meta de cierres por tipo:
+              <input class="input" id="ventas-meta-cierres" type="number" min="1" value="2" style="width:60px;padding:4px 8px;font-size:12px;" oninput="saveMetaCierresTipo(this.value)">
+            </span>
+          </div>
           <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;font-size:13px;">
             <thead>
@@ -538,6 +538,7 @@ select.input{cursor:pointer;}
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Descalificadas</th>
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Cerradas</th>
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">% Cierre</th>
+                <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Llamadas necesarias</th>
               </tr>
             </thead>
             <tbody id="ventas-tipo-prospecto-body"></tbody>
@@ -957,7 +958,7 @@ function setAgencia(ag, btn){
 
 function setCloser(cl, btn){
   closerFilter=cl;
-  document.querySelectorAll('#cl-filter-todos,#cl-filter-manuela,#cl-filter-leandro,#cl-filter-ariel').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#cl-filter-todos,#cl-filter-manuela,#cl-filter-leandro').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   updateOverview();
   updatePerformance();
@@ -1413,6 +1414,11 @@ function bigNumberCard(label,icon,value,color,delta,spark){
   </div>`;
 }
 
+function saveMetaCierresTipo(val){
+  try{localStorage.setItem('meta_cierres_tipo',val);}catch(e){}
+  renderVentas();
+}
+
 function renderVentas(){
   const baseCalls=closerFilter==='todos'?state.calls:state.calls.filter(c=>c.closer===closerFilter);
   const {cur,prev,hasPrev}=getVentasRanges();
@@ -1498,10 +1504,16 @@ function renderVentas(){
   ];
   document.getElementById('ventas-tiles').innerHTML = restCards.join('');
 
+  let metaCierres=2;
+  try{metaCierres=Number(localStorage.getItem('meta_cierres_tipo'))||2;}catch(e){}
+  const metaCierresEl=document.getElementById('ventas-meta-cierres');
+  if(metaCierresEl && document.activeElement!==metaCierresEl) metaCierresEl.value=metaCierres;
+
   const tipos = [
     ['desarrolladora', '🏗️ Desarrolladora'],
     ['inmobiliaria', '🏠 Inmobiliaria'],
     ['asesor', '🧑‍💼 Asesor'],
+    ['particular', '🙋 Particular'],
     ['', '❓ Sin especificar'],
   ];
   document.getElementById('ventas-tipo-prospecto-body').innerHTML = tipos.map(([key,label])=>{
@@ -1511,6 +1523,7 @@ function renderVentas(){
     const subCalificadas = subTotal - subNoCalifica;
     const subCerradas = subset.filter(isCierreReal).length;
     const subTasa = subCalificadas>0 ? (subCerradas/subCalificadas*100) : 0;
+    const necesarias = subTasa>0 ? Math.ceil(metaCierres/(subTasa/100)) : null;
     if(subTotal === 0) return '';
     return `<tr style="border-bottom:1px solid var(--border);">
       <td style="padding:9px 6px;">${label}</td>
@@ -1519,8 +1532,9 @@ function renderVentas(){
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--text3);">${subNoCalifica}</td>
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--accent2);">${subCerradas}</td>
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;">${subTasa.toFixed(1)}%</td>
+      <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:var(--yellow);">${necesarias!==null?necesarias:'—'}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--text3);">Sin datos en este período</td></tr>';
+  }).join('') || '<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--text3);">Sin datos en este período</td></tr>';
 }
 function isCerradaPendienteCuota(c){return c.estado==='cerrada' && c.primeraCuotaPagada===false;}
 function marcarFeePerdido(id){
@@ -1555,16 +1569,9 @@ function navMes(dir){
 }
 function getIngresosMonthRange(){
   const now=new Date();
-  return{start:new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset,1).toISOString().slice(0,10),end:new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset+1,0).toISOString().slice(0,10)};
+  return{start:new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10),end:new Date(now.getFullYear(),now.getMonth()+1,0).toISOString().slice(0,10)};
 }
-function getIngresosMesLabel(){const now=new Date();const d=new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset,1);return d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});}
-function navIngresosMes(dir){
-  ingresosMesOffset+=dir;
-  if(ingresosMesOffset>0)ingresosMesOffset=0;
-  const nb=document.getElementById('ingresos-mes-next');
-  if(nb){nb.disabled=ingresosMesOffset===0;nb.style.opacity=ingresosMesOffset===0?'0.3':'1';nb.style.color=ingresosMesOffset===0?'var(--text3)':'var(--text2)';}
-  updateIngresosBar();
-}
+function getIngresosMesLabel(){const now=new Date();return now.toLocaleDateString('es-AR',{month:'long',year:'numeric'});}
 function filterCallsByPeriod(){
   const t=today(),w=getWeekRange(),m=getMonthRange();
   if(state.filter==='dia') return state.calls.filter(c=>c.fecha===t);
@@ -1626,7 +1633,7 @@ let metaCloser='grupal';
 
 function setMetaCloser(cl, btn){
   metaCloser=cl;
-  document.querySelectorAll('#meta-closer-grupal,#meta-closer-manuela,#meta-closer-leandro,#meta-closer-ariel').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#meta-closer-grupal,#meta-closer-manuela,#meta-closer-leandro').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   const tagEl=document.getElementById('ingresos-closer-tag');
   if(tagEl) tagEl.textContent = cl==='grupal' ? '' : '· '+cl.charAt(0).toUpperCase()+cl.slice(1);
@@ -1712,7 +1719,7 @@ function updateIngresosBar(){
     const config=c?JSON.parse(c):{meta:0,ticket:3000,tasa:28,comision:10};
     const m=getIngresosMonthRange();
     const baseCallsIngresos = metaCloser==='grupal' ? state.calls : state.calls.filter(c2=>c2.closer===metaCloser);
-    const callsMesCerradas=baseCallsIngresos.filter(c2=>c2.fecha>=m.start&&c2.fecha<=m.end&&(c2.estado==='cerrada'||c2.estado==='cuota-cobrada'));
+    const callsMesCerradas=baseCallsIngresos.filter(c2=>c2.fecha>=m.start&&c2.fecha<=m.end&&((c2.estado==='cerrada'&&c2.primeraCuotaPagada!==false)||c2.estado==='cuota-cobrada'));
     const comInvicta=config.comisionInvicta||10;
     let comSA=0;
     callsMesCerradas.forEach(c2=>{
@@ -1753,6 +1760,10 @@ function updateOverview(){
   document.getElementById('stat-cerradas').textContent=cerradas;
   document.getElementById('stat-seguimiento').textContent=seguimiento;
   document.getElementById('stat-rate').textContent=rate+'% tasa de cierre';
+  const califEl=document.getElementById('stat-calificadas');
+  if(califEl) califEl.textContent=(total-noCalifica);
+  const descalEl=document.getElementById('stat-descalificadas-total');
+  if(descalEl) descalEl.textContent=noCalifica;
   const ncEl=document.getElementById('stat-no-califica');
   if(ncEl) ncEl.textContent=noCalifica;
   const npEl=document.getElementById('stat-no-pitcheo');
@@ -1844,7 +1855,7 @@ function updateOverview(){
     <td style="font-weight:500">${c.nombre}</td>
     <td>${c.closer?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(124,108,246,.12);color:#a78bfa;font-weight:600;">${c.closer.charAt(0).toUpperCase()+c.closer.slice(1)}</span>`:'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
     <td>${isInvictaCall(c)?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(56,189,248,.12);color:#38bdf8;font-weight:600;">'+INVICTA_LOGO_SVG+' Invicta</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
-    <td>${c.tipoProspecto==='desarrolladora'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.12);color:var(--yellow);font-weight:600;">🏗️ Desarrolladora</span>':c.tipoProspecto==='inmobiliaria'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.12);color:var(--green);font-weight:600;">🏠 Inmobiliaria</span>':c.tipoProspecto==='asesor'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(148,163,184,.12);color:var(--text3);font-weight:600;">🧑‍💼 Asesor</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
+    <td>${c.tipoProspecto==='desarrolladora'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.12);color:var(--yellow);font-weight:600;">🏗️ Desarrolladora</span>':c.tipoProspecto==='inmobiliaria'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.12);color:var(--green);font-weight:600;">🏠 Inmobiliaria</span>':c.tipoProspecto==='asesor'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(148,163,184,.12);color:var(--text3);font-weight:600;">🧑‍💼 Asesor</span>':c.tipoProspecto==='particular'?'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(96,165,250,.12);color:#60a5fa;font-weight:600;">🙋 Particular</span>':'<span style="font-size:11px;color:var(--text3);">—</span>'}</td>
     <td><span class="badge badge-${c.estado}">${c.feePerdido?'💸 Fee perdido (no pagó cuota)':(c.estado==='cerrada'&&!c.primeraCuotaPagada?'⏳ Fee pagado (sin 1ra cuota)':estadoLabelCall(c))}</span></td>
     <td style="color:var(--text2);font-size:12px">${c.objecion||'—'}</td>
     <td style="color:var(--text2);font-size:12px">${c.programa||'—'}</td>

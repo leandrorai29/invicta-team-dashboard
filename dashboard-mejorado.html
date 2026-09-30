@@ -361,9 +361,10 @@ select.input{cursor:pointer;}
 
       <!-- ===== OVERVIEW ===== -->
       <div id="tab-overview" class="tab-content active">
-        <div class="stats-row" style="grid-template-columns:repeat(2,1fr);margin-bottom:12px;">
-          <div class="stat-card" style="border-color:rgba(16,185,129,.25);"><div class="stat-card-icon" style="background:var(--surface3);">🎯</div><div class="stat-label">Calificadas este período</div><div class="stat-value" style="color:var(--green)" id="stat-calificadas">0</div><div class="stat-sub">Cuentan para la tasa</div></div>
-          <div class="stat-card" style="border-color:rgba(148,163,184,.25);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificadas este período</div><div class="stat-value" style="color:var(--text3)" id="stat-descalificadas-total">0</div><div class="stat-sub">No cuentan para la tasa</div></div>
+        <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px;">
+          <div class="stat-card" style="border-color:rgba(16,185,129,.25);"><div class="stat-card-icon" style="background:var(--surface3);">🎯</div><div class="stat-label">Calificadas este período</div><div class="stat-value" style="color:var(--green)" id="stat-calificadas">0</div><div class="stat-sub">Asistió y se le pitcheó</div></div>
+          <div class="stat-card" style="border-color:rgba(148,163,184,.25);"><div class="stat-card-icon" style="background:var(--surface3);">🚫</div><div class="stat-label">Descalificadas este período</div><div class="stat-value" style="color:var(--text3)" id="stat-descalificadas-total">0</div><div class="stat-sub">Marcadas explícitamente</div></div>
+          <div class="stat-card" style="border-color:rgba(245,158,11,.2);"><div class="stat-card-icon" style="background:var(--surface3);">❔</div><div class="stat-label">Sin determinar</div><div class="stat-value" style="color:var(--orange)" id="stat-sin-determinar">0</div><div class="stat-sub">No show / canceló / no se pitcheó</div></div>
         </div>
         <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
           <div class="stat-card purple"><div class="stat-card-icon">📞</div><div class="stat-label">Calls Totales</div><div class="stat-value purple" id="stat-total">0</div><div class="stat-sub">Este período</div></div>
@@ -536,6 +537,7 @@ select.input{cursor:pointer;}
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Llamadas</th>
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Calificadas</th>
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Descalificadas</th>
+                <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Sin determinar</th>
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Cerradas</th>
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">% Cierre</th>
                 <th style="text-align:right;padding:8px 6px;color:var(--text2);font-size:11px;text-transform:uppercase;">Llamadas necesarias</th>
@@ -964,6 +966,7 @@ function setCloser(cl, btn){
   updatePerformance();
   renderHotList();
   renderCuotas();
+  renderVentas();
 }
 
 function setLeadSearch(val){
@@ -1520,7 +1523,8 @@ function renderVentas(){
     const subset = calls.filter(c => (c.tipoProspecto||'') === key);
     const subTotal = subset.length;
     const subNoCalifica = subset.filter(c=>c.estado==='no-califica').length;
-    const subCalificadas = subTotal - subNoCalifica;
+    const subCalificadas = subset.filter(c=>c.estado==='cerrada'||c.estado==='seguimiento').length;
+    const subSinDeterminar = subTotal - subCalificadas - subNoCalifica;
     const subCerradas = subset.filter(isCierreReal).length;
     const subTasa = subCalificadas>0 ? (subCerradas/subCalificadas*100) : 0;
     const necesarias = subTasa>0 ? Math.ceil(metaCierres/(subTasa/100)) : null;
@@ -1530,11 +1534,12 @@ function renderVentas(){
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;">${subTotal}</td>
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--green);">${subCalificadas}</td>
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--text3);">${subNoCalifica}</td>
+      <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--orange);">${subSinDeterminar}</td>
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;color:var(--accent2);">${subCerradas}</td>
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;">${subTasa.toFixed(1)}%</td>
       <td style="padding:9px 6px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:var(--yellow);">${necesarias!==null?necesarias:'—'}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--text3);">Sin datos en este período</td></tr>';
+  }).join('') || '<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--text3);">Sin datos en este período</td></tr>';
 }
 function isCerradaPendienteCuota(c){return c.estado==='cerrada' && c.primeraCuotaPagada===false;}
 function marcarFeePerdido(id){
@@ -1615,6 +1620,9 @@ function setFilter(f,btn){
   updateOverview();
   updatePerformance();
   renderMetasProgress();
+  renderVentas();
+  renderHotList();
+  renderCuotas();
 }
 function estadoLabel(e){return{cerrada:'✅ Cerrada','no-cerrada':'❌ No cerrada',seguimiento:'🔄 Seguimiento',agendada:'📅 Re-agendada','no-califica':'🚫 No calificaba','no-pitcheo':'⏸️ No se pitcheó','cuota-cobrada':'💳 Cuota cobrada'}[e]||e;}
 function estadoLabelCall(c){
@@ -1761,9 +1769,12 @@ function updateOverview(){
   document.getElementById('stat-seguimiento').textContent=seguimiento;
   document.getElementById('stat-rate').textContent=rate+'% tasa de cierre';
   const califEl=document.getElementById('stat-calificadas');
-  if(califEl) califEl.textContent=(total-noCalifica);
+  const calificadasReal=calls.filter(c=>c.estado==='cerrada'||c.estado==='seguimiento').length;
+  if(califEl) califEl.textContent=calificadasReal;
   const descalEl=document.getElementById('stat-descalificadas-total');
   if(descalEl) descalEl.textContent=noCalifica;
+  const sinDetEl=document.getElementById('stat-sin-determinar');
+  if(sinDetEl) sinDetEl.textContent=(total-calificadasReal-noCalifica);
   const ncEl=document.getElementById('stat-no-califica');
   if(ncEl) ncEl.textContent=noCalifica;
   const npEl=document.getElementById('stat-no-pitcheo');

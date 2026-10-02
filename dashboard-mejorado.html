@@ -1082,6 +1082,7 @@ async function marcarCuotaPagada(id){
   await saveCall_sb(dashCalls[dashCalls.length-1]).catch(e=>console.error('Supabase cobro-call sync:',e));
   renderCuotas();
   updateOverview();
+  updateIngresosBar();
 }
 
 async function marcarCuotaNoPagada(id){
@@ -1098,6 +1099,7 @@ async function marcarCuotaNoPagada(id){
   await saveCuota_sb(cuota).catch(e=>console.error('Supabase cuota sync:',e));
   renderCuotas();
   updateOverview();
+  updateIngresosBar();
 }
 
 async function deleteCuota(id){

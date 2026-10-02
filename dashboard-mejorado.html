@@ -443,7 +443,11 @@ select.input{cursor:pointer;}
           <div class="section">
             <div class="section-header" style="margin-bottom:16px;">
               <div class="section-title">💰 Ingresos del Mes <span id="ingresos-closer-tag" style="font-size:11px;font-weight:600;color:var(--accent2);"></span></div>
-              <span class="section-badge" id="ingresos-mes-label" style="min-width:110px;text-align:center;"></span>
+              <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);padding:2px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);">
+                <button onclick="navIngresosMes(-1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;">‹</button>
+                <span class="section-badge" id="ingresos-mes-label" style="min-width:110px;text-align:center;"></span>
+                <button id="ingresos-mes-next" onclick="navIngresosMes(1)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;" disabled>›</button>
+              </div>
             </div>
             <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
               <div style="font-size:36px;font-weight:800;font-family:'DM Mono';color:var(--green)" id="ingresos-actuales">$0</div>
@@ -1574,9 +1578,16 @@ function navMes(dir){
 }
 function getIngresosMonthRange(){
   const now=new Date();
-  return{start:new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10),end:new Date(now.getFullYear(),now.getMonth()+1,0).toISOString().slice(0,10)};
+  return{start:new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset,1).toISOString().slice(0,10),end:new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset+1,0).toISOString().slice(0,10)};
 }
-function getIngresosMesLabel(){const now=new Date();return now.toLocaleDateString('es-AR',{month:'long',year:'numeric'});}
+function getIngresosMesLabel(){const now=new Date();const d=new Date(now.getFullYear(),now.getMonth()+ingresosMesOffset,1);return d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});}
+function navIngresosMes(dir){
+  ingresosMesOffset+=dir;
+  if(ingresosMesOffset>0)ingresosMesOffset=0;
+  const nb=document.getElementById('ingresos-mes-next');
+  if(nb){nb.disabled=ingresosMesOffset===0;nb.style.opacity=ingresosMesOffset===0?'0.3':'1';nb.style.color=ingresosMesOffset===0?'var(--text3)':'var(--text2)';}
+  updateIngresosBar();
+}
 function filterCallsByPeriod(){
   const t=today(),w=getWeekRange(),m=getMonthRange();
   if(state.filter==='dia') return state.calls.filter(c=>c.fecha===t);
